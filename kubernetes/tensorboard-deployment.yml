@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: truffle
+  name: tensorboard
+spec:
+  selector:
+    app: tensorboard
+  type: LoadBalancer
+  ports:
+    - name: http
+      port: 80
+      targetPort: 6006
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: truffle
+  name: tensorboard
+spec:
+  selector:
+    matchLabels:
+      app: tensorboard
+  template:
+    metadata:
+      labels:
+        app: tensorboard
+    spec:
+      containers:
+        - name: tensorboard
+          image: tensorflow/tensorflow:2.4.1
+          command: ["/bin/bash"]
+          args:
+            [
+              "-c",
+              "pip install tensorboard-plugin-profile==2.4.0 cloud-tpu-client && tensorboard --logdir=gs://secret-sauce/tensorboard --bind_all --port 6006",
+            ]
+          ports:
+            - containerPort: 6006

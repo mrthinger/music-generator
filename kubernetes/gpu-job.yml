@@ -1,0 +1,22 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: truffle
+  name: sauce-train-gpu
+spec:
+  template:
+    metadata:
+      name: sauce-train-gpu
+    spec:
+      tolerations:
+        - key: cloud.google.com/gke-preemptible
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      restartPolicy: Never
+      containers:
+        - name: sauce-train
+          image: gcr.io/rowan-senior-project/sauce-train:v2.2.10
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
