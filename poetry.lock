@@ -46,18 +46,25 @@ python-versions = "*"
 
 [[package]]
 name = "betterproto"
-version = "1.2.5"
+version = "2.0.0b2"
 description = "A better Protobuf / gRPC generator & library"
 category = "main"
 optional = false
-python-versions = ">=3.6"
+python-versions = "^3.6"
+develop = false
 
 [package.dependencies]
-grpclib = "*"
-stringcase = "*"
+grpclib = "^0.4.1"
+python-dateutil = "^2.8"
 
 [package.extras]
-compiler = ["black", "jinja2", "protobuf"]
+compiler = ["black (>=19.3b0)", "jinja2 (>=2.11.2,<3.0.0)", "protobuf (>=3.12.2,<4.0.0)"]
+
+[package.source]
+type = "git"
+url = "https://github.com/danielgtaylor/python-betterproto"
+reference = "6c1c41e9ccf7d020641e87f82e6419c3393a3841"
+resolved_reference = "6c1c41e9ccf7d020641e87f82e6419c3393a3841"
 
 [[package]]
 name = "black"
@@ -82,15 +89,39 @@ colorama = ["colorama (>=0.4.3)"]
 d = ["aiohttp (>=3.3.2)", "aiohttp-cors"]
 
 [[package]]
+name = "cachetools"
+version = "4.2.1"
+description = "Extensible memoizing collections and decorators"
+category = "main"
+optional = false
+python-versions = "~=3.5"
+
+[[package]]
+name = "certifi"
+version = "2020.12.5"
+description = "Python package for providing Mozilla's CA Bundle."
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "cffi"
 version = "1.14.5"
 description = "Foreign Function Interface for Python calling C code."
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
 [package.dependencies]
 pycparser = "*"
+
+[[package]]
+name = "chardet"
+version = "4.0.0"
+description = "Universal encoding detector for Python 2 and 3"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "click"
@@ -115,6 +146,120 @@ description = "Decorators for Humans"
 category = "dev"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*"
+
+[[package]]
+name = "google-api-core"
+version = "1.26.1"
+description = "Google API client core library"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
+
+[package.dependencies]
+google-auth = ">=1.21.1,<2.0dev"
+googleapis-common-protos = ">=1.6.0,<2.0dev"
+packaging = ">=14.3"
+protobuf = ">=3.12.0"
+pytz = "*"
+requests = ">=2.18.0,<3.0.0dev"
+six = ">=1.13.0"
+
+[package.extras]
+grpc = ["grpcio (>=1.29.0,<2.0dev)"]
+grpcgcp = ["grpcio-gcp (>=0.2.2)"]
+grpcio-gcp = ["grpcio-gcp (>=0.2.2)"]
+
+[[package]]
+name = "google-auth"
+version = "1.27.1"
+description = "Google Authentication Library"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
+
+[package.dependencies]
+cachetools = ">=2.0.0,<5.0"
+pyasn1-modules = ">=0.2.1"
+rsa = {version = ">=3.1.4,<5", markers = "python_version >= \"3.6\""}
+six = ">=1.9.0"
+
+[package.extras]
+aiohttp = ["aiohttp (>=3.6.2,<4.0.0dev)"]
+pyopenssl = ["pyopenssl (>=20.0.0)"]
+
+[[package]]
+name = "google-cloud-core"
+version = "1.6.0"
+description = "Google Cloud API client core library"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
+
+[package.dependencies]
+google-api-core = ">=1.21.0,<2.0.0dev"
+google-auth = ">=1.24.0,<2.0dev"
+six = ">=1.12.0"
+
+[package.extras]
+grpc = ["grpcio (>=1.8.2,<2.0dev)"]
+
+[[package]]
+name = "google-cloud-storage"
+version = "1.36.1"
+description = "Google Cloud Storage API client library"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
+
+[package.dependencies]
+google-auth = ">=1.11.0,<2.0dev"
+google-cloud-core = ">=1.4.1,<2.0dev"
+google-resumable-media = ">=1.2.0,<2.0dev"
+requests = ">=2.18.0,<3.0.0dev"
+
+[[package]]
+name = "google-crc32c"
+version = "1.1.2"
+description = "A python wrapper of the C library 'Google CRC32C'"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+cffi = ">=1.0.0"
+
+[package.extras]
+testing = ["pytest"]
+
+[[package]]
+name = "google-resumable-media"
+version = "1.2.0"
+description = "Utilities for Google Media Downloads and Resumable Uploads"
+category = "main"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*"
+
+[package.dependencies]
+google-crc32c = {version = ">=1.0,<2.0dev", markers = "python_version >= \"3.5\""}
+six = "*"
+
+[package.extras]
+aiohttp = ["aiohttp (>=3.6.2,<4.0.0dev)"]
+requests = ["requests (>=2.18.0,<3.0.0dev)"]
+
+[[package]]
+name = "googleapis-common-protos"
+version = "1.53.0"
+description = "Common protobufs used in Google APIs"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+protobuf = ">=3.12.0"
+
+[package.extras]
+grpc = ["grpcio (>=1.0.0)"]
 
 [[package]]
 name = "grpclib"
@@ -155,6 +300,14 @@ description = "HTTP/2 framing layer for Python"
 category = "main"
 optional = false
 python-versions = ">=3.6.1"
+
+[[package]]
+name = "idna"
+version = "2.10"
+description = "Internationalized Domain Names in Applications (IDNA)"
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "iniconfig"
@@ -295,7 +448,7 @@ python-versions = ">=3.7"
 name = "packaging"
 version = "20.9"
 description = "Core utilities for Python packages"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -380,6 +533,17 @@ python-versions = ">=3.6.1"
 wcwidth = "*"
 
 [[package]]
+name = "protobuf"
+version = "3.15.5"
+description = "Protocol Buffers"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = ">=1.9"
+
+[[package]]
 name = "ptyprocess"
 version = "0.7.0"
 description = "Run a subprocess in a pseudo terminal"
@@ -396,10 +560,29 @@ optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
+name = "pyasn1"
+version = "0.4.8"
+description = "ASN.1 types and codecs"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "pyasn1-modules"
+version = "0.2.8"
+description = "A collection of ASN.1-based protocols modules."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+pyasn1 = ">=0.4.6,<0.5.0"
+
+[[package]]
 name = "pycparser"
 version = "2.20"
 description = "C parser in Python"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
@@ -415,7 +598,7 @@ python-versions = ">=3.5"
 name = "pyparsing"
 version = "2.4.7"
 description = "Python parsing module"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.6, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -444,7 +627,7 @@ testing = ["argcomplete", "hypothesis (>=3.56)", "mock", "nose", "requests", "xm
 name = "python-dateutil"
 version = "2.8.1"
 description = "Extensions to the standard Python datetime module"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 
@@ -452,10 +635,21 @@ python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,>=2.7"
 six = ">=1.5"
 
 [[package]]
+name = "python-dotenv"
+version = "0.15.0"
+description = "Add .env support to your django/flask apps in development and deployments"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "pytz"
 version = "2021.1"
 description = "World timezone definitions, modern and historical"
-category = "dev"
+category = "main"
 optional = false
 python-versions = "*"
 
@@ -488,20 +682,41 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "requests"
+version = "2.25.1"
+description = "Python HTTP for Humans."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[package.dependencies]
+certifi = ">=2017.4.17"
+chardet = ">=3.0.2,<5"
+idna = ">=2.5,<3"
+urllib3 = ">=1.21.1,<1.27"
+
+[package.extras]
+security = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)"]
+socks = ["PySocks (>=1.5.6,!=1.5.7)", "win-inet-pton"]
+
+[[package]]
+name = "rsa"
+version = "4.7.2"
+description = "Pure-Python RSA implementation"
+category = "main"
+optional = false
+python-versions = ">=3.5, <4"
+
+[package.dependencies]
+pyasn1 = ">=0.1.3"
+
+[[package]]
 name = "six"
 version = "1.15.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
-
-[[package]]
-name = "stringcase"
-version = "1.2.0"
-description = "String case converter."
 category = "main"
 optional = false
-python-versions = "*"
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
 [[package]]
 name = "toml"
@@ -550,6 +765,19 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "urllib3"
+version = "1.26.3"
+description = "HTTP library with thread-safe connection pooling, file post, and more."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, <4"
+
+[package.extras]
+brotli = ["brotlipy (>=0.6.0)"]
+secure = ["pyOpenSSL (>=0.14)", "cryptography (>=1.3.4)", "idna (>=2.0.0)", "certifi", "ipaddress"]
+socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
+
+[[package]]
 name = "wcwidth"
 version = "0.2.5"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -560,7 +788,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "7db4ebe65cb7e8c963cb23e58c1456db91682c9d09385171d52928f192864159"
+content-hash = "eebfbe3b04cf6c6771ba8b80096092c734e2ae75c7833c25e17088ab8e185a95"
 
 [metadata.files]
 appdirs = [
@@ -583,12 +811,18 @@ backcall = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
 ]
-betterproto = [
-    {file = "betterproto-1.2.5.tar.gz", hash = "sha256:74a3ab34646054f674d236d1229ba8182dc2eae86feb249b8590ef496ce9803d"},
-]
+betterproto = []
 black = [
     {file = "black-20.8b1-py3-none-any.whl", hash = "sha256:70b62ef1527c950db59062cda342ea224d772abdf6adc58b86a45421bab20a6b"},
     {file = "black-20.8b1.tar.gz", hash = "sha256:1c02557aa099101b9d21496f8a914e9ed2222ef70336404eeeac8edba836fbea"},
+]
+cachetools = [
+    {file = "cachetools-4.2.1-py3-none-any.whl", hash = "sha256:1d9d5f567be80f7c07d765e21b814326d78c61eb0c3a637dffc0e5d1796cb2e2"},
+    {file = "cachetools-4.2.1.tar.gz", hash = "sha256:f469e29e7aa4cff64d8de4aad95ce76de8ea1125a16c68e0d93f65c3c3dc92e9"},
+]
+certifi = [
+    {file = "certifi-2020.12.5-py2.py3-none-any.whl", hash = "sha256:719a74fb9e33b9bd44cc7f3a8d94bc35e4049deebe19ba7d8e108280cfd59830"},
+    {file = "certifi-2020.12.5.tar.gz", hash = "sha256:1a4995114262bffbc2413b159f2a1a480c969de6e6eb13ee966d470af86af59c"},
 ]
 cffi = [
     {file = "cffi-1.14.5-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:bb89f306e5da99f4d922728ddcd6f7fcebb3241fc40edebcb7284d7514741991"},
@@ -629,6 +863,10 @@ cffi = [
     {file = "cffi-1.14.5-cp39-cp39-win_amd64.whl", hash = "sha256:f2d45f97ab6bb54753eab54fffe75aaf3de4ff2341c9daee1987ee1837636f1d"},
     {file = "cffi-1.14.5.tar.gz", hash = "sha256:fd78e5fee591709f32ef6edb9a015b4aa1a5022598e36227500c8f4e02328d9c"},
 ]
+chardet = [
+    {file = "chardet-4.0.0-py2.py3-none-any.whl", hash = "sha256:f864054d66fd9118f2e67044ac8981a54775ec5b67aed0441892edb553d21da5"},
+    {file = "chardet-4.0.0.tar.gz", hash = "sha256:0d6f53a15db4120f2b08c94f11e7d93d2c911ee118b6b30a04ec3ee8310179fa"},
+]
 click = [
     {file = "click-7.1.2-py2.py3-none-any.whl", hash = "sha256:dacca89f4bfadd5de3d7489b7c8a566eee0d3676333fbb50030263894c38c0dc"},
     {file = "click-7.1.2.tar.gz", hash = "sha256:d2b5255c7c6349bc1bd1e59e08cd12acbbd63ce649f2588755783aa94dfb6b1a"},
@@ -640,6 +878,61 @@ colorama = [
 decorator = [
     {file = "decorator-4.4.2-py2.py3-none-any.whl", hash = "sha256:41fa54c2a0cc4ba648be4fd43cff00aedf5b9465c9bf18d64325bc225f08f760"},
     {file = "decorator-4.4.2.tar.gz", hash = "sha256:e3a62f0520172440ca0dcc823749319382e377f37f140a0b99ef45fecb84bfe7"},
+]
+google-api-core = [
+    {file = "google-api-core-1.26.1.tar.gz", hash = "sha256:23b0df512c4cc8729793f8992edb350e3211f5fd0ec007afb1599864b421beef"},
+    {file = "google_api_core-1.26.1-py2.py3-none-any.whl", hash = "sha256:c383206f0f87545d3e658c4f8dc3b18a8457610fdbd791a15757c5b42d1e0e7f"},
+]
+google-auth = [
+    {file = "google-auth-1.27.1.tar.gz", hash = "sha256:d8958af6968e4ecd599f82357ebcfeb126f826ed0656126ad68416f810f7531e"},
+    {file = "google_auth-1.27.1-py2.py3-none-any.whl", hash = "sha256:63a5636d7eacfe6ef5b7e36e112b3149fa1c5b5ad77dd6df54910459bcd6b89f"},
+]
+google-cloud-core = [
+    {file = "google-cloud-core-1.6.0.tar.gz", hash = "sha256:c6abb18527545379fc82efc4de75ce9a3772ccad2fc645adace593ba097cbb02"},
+    {file = "google_cloud_core-1.6.0-py2.py3-none-any.whl", hash = "sha256:40d9c2da2d03549b5ac3dcccf289d4f15e6d1210044c6381ce45c92913e62904"},
+]
+google-cloud-storage = [
+    {file = "google-cloud-storage-1.36.1.tar.gz", hash = "sha256:b63f31f3ec51797fce682ef4f6b7323f8b99e9ca0b21092801b1b8d25017f58a"},
+    {file = "google_cloud_storage-1.36.1-py2.py3-none-any.whl", hash = "sha256:e3227abe57122370df02f00b8a6d78da6d41a0df4e6864b7f65a3a4ae673a8a7"},
+]
+google-crc32c = [
+    {file = "google-crc32c-1.1.2.tar.gz", hash = "sha256:dff5bd1236737f66950999d25de7a78144548ebac7788d30ada8c1b6ead60b27"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-macosx_10_14_x86_64.whl", hash = "sha256:8ed8f6dc4f55850cba2eb22b78902ad37f397ee02692d3b8e00842e9af757321"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:110157fb19ab5db15603debfaf5fcfbac9627576787d9caf8618ff96821a7a1f"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-manylinux2010_x86_64.whl", hash = "sha256:80abca603187093ea089cd1215c3779040dda55d3cdabc0cd5ea0e10df7bff99"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-manylinux2014_aarch64.whl", hash = "sha256:6789db0b12aab12a0f04de22ed8412dfa5f6abd5a342ea19f15355064e1cc387"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:ea170341a4a9078a067b431044cd56c73553425833a7c2bb81734777a230ad4b"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-win32.whl", hash = "sha256:a64e0e8ed6076a8d867fc4622ad821c55eba8dff1b48b18f56b7c2392e22ab9d"},
+    {file = "google_crc32c-1.1.2-cp36-cp36m-win_amd64.whl", hash = "sha256:9372211acbcc207f63ffaffea1d05f3244a21311e4710721ffff3e8b7a0d24d0"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:0ae3cf54e0d4d83c8af1afe96fc0970fbf32f1b29275f3bfd44ce25c4b622a2b"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:34a97937f164147aefa53c3277364fd3bfa7fd244cbebbd5a976fa8325fb496b"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-manylinux2010_x86_64.whl", hash = "sha256:91ad96ee2958311d0bb75ffe5c25c87fb521ef547c09e04a8bb6143e75fb1367"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-manylinux2014_aarch64.whl", hash = "sha256:b5ea1055fe470334ced844270e7c808b04fe31e3e6394675daa77f6789ca9eff"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:e6458c41236d37cb982120b070ebcc115687c852bee24cdd18792da2640cf44d"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-win32.whl", hash = "sha256:e5af77656e8d367701f40f80a91c985ca43319f322f0a36ba9f93909d0bc4cb2"},
+    {file = "google_crc32c-1.1.2-cp37-cp37m-win_amd64.whl", hash = "sha256:ae7b9e7e2ca1b06c3a68b6ef223947a52c30ffae329b1a2be3402756073f2732"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:7c5138ed2e815189ba524756e027ac5833365e86115b1c2e6d9e833974a58d82"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:a6c8a712ffae56c805ca732b735af02860b246bed2c1acb38ea954a8b2dc4581"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:49838ede42592154f9fcd21d07c7a43a67b00a36e252f82ae72542fde09dc51f"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-manylinux2014_aarch64.whl", hash = "sha256:ef2ed6d0ac4de4ac602903e203eccd25ec8e37f1446fe1a3d2953a658035e0a5"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:51f4aa06125bf0641f65fb83268853545dbeb36b98ccfec69ef57dcb6b73b176"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-win32.whl", hash = "sha256:1dc6904c0d958f43102c85d70792cca210d3d051ddbeecd0eff10abcd981fdfa"},
+    {file = "google_crc32c-1.1.2-cp38-cp38-win_amd64.whl", hash = "sha256:298a9a922d35b123a73be80233d0f19c6ea01f008743561a8937f9dd83fb586b"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:ab2b31395fbeeae6d15c98bd7f8b9fb76a18f18f87adc11b1f6dbe8f90d8382f"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:d4a0d4fb938c2c3c0076445c9bd1215a3bd3df557b88d8b05ec2889ca0c92f8d"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-manylinux2010_x86_64.whl", hash = "sha256:d0630670d27785d7e610e72752dc8087436d00d2c7115e149c0a754babb56d3e"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-manylinux2014_aarch64.whl", hash = "sha256:364eb36e8d9d34542c17b0c410035b0557edd4300a92ed736b237afaa0fd6dae"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:0dd9b61d0c63043b013349c9ec8a83ec2b05c96410c5bc257da5d0de743fc171"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-win32.whl", hash = "sha256:92ed6062792b989e84621e07a5f3d37da9cc3153b77d23a582921f14863af31d"},
+    {file = "google_crc32c-1.1.2-cp39-cp39-win_amd64.whl", hash = "sha256:78cf5b1bd30f3a6033b41aa4ce8c796870bc4645a15d3ef47a4b05d31b0a6dc1"},
+]
+google-resumable-media = [
+    {file = "google-resumable-media-1.2.0.tar.gz", hash = "sha256:ee98b1921e5bda94867a08c864e55b4763d63887664f49ee1c231988f56b9d43"},
+    {file = "google_resumable_media-1.2.0-py2.py3-none-any.whl", hash = "sha256:dbe670cd7f02f3586705fd5a108c8ab8552fa36a1cad8afbc5a54e982cf34f0c"},
+]
+googleapis-common-protos = [
+    {file = "googleapis-common-protos-1.53.0.tar.gz", hash = "sha256:a88ee8903aa0a81f6c3cec2d5cf62d3c8aa67c06439b0496b49048fb1854ebf4"},
+    {file = "googleapis_common_protos-1.53.0-py2.py3-none-any.whl", hash = "sha256:f6d561ab8fb16b30020b940e2dd01cd80082f4762fa9f3ee670f4419b4b8dbd0"},
 ]
 grpclib = [
     {file = "grpclib-0.4.1.tar.gz", hash = "sha256:8c0021cd038634c268249e4cd168d9f3570e66ceceec1c9416094b788ebc8372"},
@@ -655,6 +948,10 @@ hpack = [
 hyperframe = [
     {file = "hyperframe-6.0.0-py3-none-any.whl", hash = "sha256:a51026b1591cac726fc3d0b7994fbc7dc5efab861ef38503face2930fd7b2d34"},
     {file = "hyperframe-6.0.0.tar.gz", hash = "sha256:742d2a4bc3152a340a49d59f32e33ec420aa8e7054c1444ef5c7efff255842f1"},
+]
+idna = [
+    {file = "idna-2.10-py2.py3-none-any.whl", hash = "sha256:b97d804b1e9b523befed77c48dacec60e6dcb0b5391d57af6a65a312a90648c0"},
+    {file = "idna-2.10.tar.gz", hash = "sha256:b307872f855b18632ce0c21c5e45be78c0ea7ae4c15c828c20788b26921eb3f6"},
 ]
 iniconfig = [
     {file = "iniconfig-1.1.1-py2.py3-none-any.whl", hash = "sha256:011e24c64b7f47f6ebd835bb12a743f2fbe9a26d4cecaa7f53bc4f35ee9da8b3"},
@@ -799,6 +1096,28 @@ prompt-toolkit = [
     {file = "prompt_toolkit-3.0.16-py3-none-any.whl", hash = "sha256:62c811e46bd09130fb11ab759012a4ae385ce4fb2073442d1898867a824183bd"},
     {file = "prompt_toolkit-3.0.16.tar.gz", hash = "sha256:0fa02fa80363844a4ab4b8d6891f62dd0645ba672723130423ca4037b80c1974"},
 ]
+protobuf = [
+    {file = "protobuf-3.15.5-cp27-cp27m-macosx_10_9_x86_64.whl", hash = "sha256:d26ed8dbdbe6b62cd24173c9ceb7588ae7831eec172ac002b095af091db01196"},
+    {file = "protobuf-3.15.5-cp27-cp27mu-manylinux1_x86_64.whl", hash = "sha256:9133b39924485ae43c02fc8274e57e5aa1706ad0970de49c72cfb8c0854d5f89"},
+    {file = "protobuf-3.15.5-cp35-cp35m-macosx_10_9_intel.whl", hash = "sha256:6bb44c15c98091e926a98362bff7fb24338bdf4001a6614834b8414c3b8593ee"},
+    {file = "protobuf-3.15.5-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:2d4cede5f2f2514df4a1eda1424a14d46daa5ea57963a1ea0fdab8d74ca2f9cd"},
+    {file = "protobuf-3.15.5-cp35-cp35m-win32.whl", hash = "sha256:ab735b3a4342004afa60ff580ce2be0f2aa784f1f69ee7f08a23ef26d22d811d"},
+    {file = "protobuf-3.15.5-cp35-cp35m-win_amd64.whl", hash = "sha256:a390e4bbb8232945fc8e4493c8b70949423a6dacee6f0353021b59c40b039e25"},
+    {file = "protobuf-3.15.5-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:dc7191b2e3361fdf2979e78a120a3a40e9d811318f6b2629036f53d9cb041c09"},
+    {file = "protobuf-3.15.5-cp36-cp36m-manylinux1_x86_64.whl", hash = "sha256:762f6b9fb8025db34f762a860fd2b1473dfc84bcd0c3e4f396a695c83d733729"},
+    {file = "protobuf-3.15.5-cp36-cp36m-win32.whl", hash = "sha256:d1aab4d0aed36f7873734a243b46786d407cfa1010fae886249db56a1493a057"},
+    {file = "protobuf-3.15.5-cp36-cp36m-win_amd64.whl", hash = "sha256:119b4d308c87e833b6265b3922d5f5927e9d804605fcb1c1f771aa4d17e03591"},
+    {file = "protobuf-3.15.5-cp37-cp37m-macosx_10_9_x86_64.whl", hash = "sha256:c5b37b117ef89431149883d9b867c341a01f835142864722534885dcc1db6b1b"},
+    {file = "protobuf-3.15.5-cp37-cp37m-manylinux1_x86_64.whl", hash = "sha256:f75aa0483fec2e4208bd4be18da0e3d7161dc74c65b6d6108f5968a8fe53a8ce"},
+    {file = "protobuf-3.15.5-cp37-cp37m-win32.whl", hash = "sha256:5d52d89e26adf0ba65193b6be39025c7766740ccc57fe9d10ddb709220b360d9"},
+    {file = "protobuf-3.15.5-cp37-cp37m-win_amd64.whl", hash = "sha256:87b5bc2ff944810a918628fc1f45f766acab23e1fecb0634fcf86cda554b30c4"},
+    {file = "protobuf-3.15.5-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:282385b8dd168b0f71f2ffca74c1fb39377f42217830ab492a0b64cbe14f86c1"},
+    {file = "protobuf-3.15.5-cp38-cp38-manylinux1_x86_64.whl", hash = "sha256:9f4445f197f779cd5b37c9d5d4aeb0d1999c1df7d143a9bce21d03dac8dba205"},
+    {file = "protobuf-3.15.5-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:ac7c7a2b271307787ccdc0a45278827f36f72aba5040eadefff129b869068797"},
+    {file = "protobuf-3.15.5-cp39-cp39-manylinux1_x86_64.whl", hash = "sha256:8090b77f0791560b3c01263f6222006fe4c1d1d526539344afc4ecd9bd3e56f2"},
+    {file = "protobuf-3.15.5-py2.py3-none-any.whl", hash = "sha256:dbb98adb4281684eb54ce1f003b574bbc5768b9f614d7faa2c56f30e18519ec7"},
+    {file = "protobuf-3.15.5.tar.gz", hash = "sha256:be8a929c6178bb6cbe9e2c858be62fa08966a39ae758a8493a88f0ed1efb6097"},
+]
 ptyprocess = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
     {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
@@ -806,6 +1125,36 @@ ptyprocess = [
 py = [
     {file = "py-1.10.0-py2.py3-none-any.whl", hash = "sha256:3b80836aa6d1feeaa108e046da6423ab8f6ceda6468545ae8d02d9d58d18818a"},
     {file = "py-1.10.0.tar.gz", hash = "sha256:21b81bda15b66ef5e1a777a21c4dcd9c20ad3efd0b3f817e7a809035269e1bd3"},
+]
+pyasn1 = [
+    {file = "pyasn1-0.4.8-py2.4.egg", hash = "sha256:fec3e9d8e36808a28efb59b489e4528c10ad0f480e57dcc32b4de5c9d8c9fdf3"},
+    {file = "pyasn1-0.4.8-py2.5.egg", hash = "sha256:0458773cfe65b153891ac249bcf1b5f8f320b7c2ce462151f8fa74de8934becf"},
+    {file = "pyasn1-0.4.8-py2.6.egg", hash = "sha256:5c9414dcfede6e441f7e8f81b43b34e834731003427e5b09e4e00e3172a10f00"},
+    {file = "pyasn1-0.4.8-py2.7.egg", hash = "sha256:6e7545f1a61025a4e58bb336952c5061697da694db1cae97b116e9c46abcf7c8"},
+    {file = "pyasn1-0.4.8-py2.py3-none-any.whl", hash = "sha256:39c7e2ec30515947ff4e87fb6f456dfc6e84857d34be479c9d4a4ba4bf46aa5d"},
+    {file = "pyasn1-0.4.8-py3.1.egg", hash = "sha256:78fa6da68ed2727915c4767bb386ab32cdba863caa7dbe473eaae45f9959da86"},
+    {file = "pyasn1-0.4.8-py3.2.egg", hash = "sha256:08c3c53b75eaa48d71cf8c710312316392ed40899cb34710d092e96745a358b7"},
+    {file = "pyasn1-0.4.8-py3.3.egg", hash = "sha256:03840c999ba71680a131cfaee6fab142e1ed9bbd9c693e285cc6aca0d555e576"},
+    {file = "pyasn1-0.4.8-py3.4.egg", hash = "sha256:7ab8a544af125fb704feadb008c99a88805126fb525280b2270bb25cc1d78a12"},
+    {file = "pyasn1-0.4.8-py3.5.egg", hash = "sha256:e89bf84b5437b532b0803ba5c9a5e054d21fec423a89952a74f87fa2c9b7bce2"},
+    {file = "pyasn1-0.4.8-py3.6.egg", hash = "sha256:014c0e9976956a08139dc0712ae195324a75e142284d5f87f1a87ee1b068a359"},
+    {file = "pyasn1-0.4.8-py3.7.egg", hash = "sha256:99fcc3c8d804d1bc6d9a099921e39d827026409a58f2a720dcdb89374ea0c776"},
+    {file = "pyasn1-0.4.8.tar.gz", hash = "sha256:aef77c9fb94a3ac588e87841208bdec464471d9871bd5050a287cc9a475cd0ba"},
+]
+pyasn1-modules = [
+    {file = "pyasn1-modules-0.2.8.tar.gz", hash = "sha256:905f84c712230b2c592c19470d3ca8d552de726050d1d1716282a1f6146be65e"},
+    {file = "pyasn1_modules-0.2.8-py2.4.egg", hash = "sha256:0fe1b68d1e486a1ed5473f1302bd991c1611d319bba158e98b106ff86e1d7199"},
+    {file = "pyasn1_modules-0.2.8-py2.5.egg", hash = "sha256:fe0644d9ab041506b62782e92b06b8c68cca799e1a9636ec398675459e031405"},
+    {file = "pyasn1_modules-0.2.8-py2.6.egg", hash = "sha256:a99324196732f53093a84c4369c996713eb8c89d360a496b599fb1a9c47fc3eb"},
+    {file = "pyasn1_modules-0.2.8-py2.7.egg", hash = "sha256:0845a5582f6a02bb3e1bde9ecfc4bfcae6ec3210dd270522fee602365430c3f8"},
+    {file = "pyasn1_modules-0.2.8-py2.py3-none-any.whl", hash = "sha256:a50b808ffeb97cb3601dd25981f6b016cbb3d31fbf57a8b8a87428e6158d0c74"},
+    {file = "pyasn1_modules-0.2.8-py3.1.egg", hash = "sha256:f39edd8c4ecaa4556e989147ebf219227e2cd2e8a43c7e7fcb1f1c18c5fd6a3d"},
+    {file = "pyasn1_modules-0.2.8-py3.2.egg", hash = "sha256:b80486a6c77252ea3a3e9b1e360bc9cf28eaac41263d173c032581ad2f20fe45"},
+    {file = "pyasn1_modules-0.2.8-py3.3.egg", hash = "sha256:65cebbaffc913f4fe9e4808735c95ea22d7a7775646ab690518c056784bc21b4"},
+    {file = "pyasn1_modules-0.2.8-py3.4.egg", hash = "sha256:15b7c67fabc7fc240d87fb9aabf999cf82311a6d6fb2c70d00d3d0604878c811"},
+    {file = "pyasn1_modules-0.2.8-py3.5.egg", hash = "sha256:426edb7a5e8879f1ec54a1864f16b882c2837bfd06eee62f2c982315ee2473ed"},
+    {file = "pyasn1_modules-0.2.8-py3.6.egg", hash = "sha256:cbac4bc38d117f2a49aeedec4407d23e8866ea4ac27ff2cf7fb3e5b570df19e0"},
+    {file = "pyasn1_modules-0.2.8-py3.7.egg", hash = "sha256:c29a5e5cc7a3f05926aff34e097e84f8589cd790ce0ed41b67aed6857b26aafd"},
 ]
 pycparser = [
     {file = "pycparser-2.20-py2.py3-none-any.whl", hash = "sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705"},
@@ -826,6 +1175,10 @@ pytest = [
 python-dateutil = [
     {file = "python-dateutil-2.8.1.tar.gz", hash = "sha256:73ebfe9dbf22e832286dafa60473e4cd239f8592f699aa5adaf10050e6e1823c"},
     {file = "python_dateutil-2.8.1-py2.py3-none-any.whl", hash = "sha256:75bb3f31ea686f1197762692a9ee6a7550b59fc6ca3a1f4b5d7e32fb98e2da2a"},
+]
+python-dotenv = [
+    {file = "python-dotenv-0.15.0.tar.gz", hash = "sha256:587825ed60b1711daea4832cf37524dfd404325b7db5e25ebe88c495c9f807a0"},
+    {file = "python_dotenv-0.15.0-py2.py3-none-any.whl", hash = "sha256:0c8d1b80d1a1e91717ea7d526178e3882732420b03f08afea0406db6402e220e"},
 ]
 pytz = [
     {file = "pytz-2021.1-py2.py3-none-any.whl", hash = "sha256:eb10ce3e7736052ed3623d49975ce333bcd712c7bb19a58b9e2089d4057d0798"},
@@ -920,12 +1273,17 @@ regex = [
     {file = "regex-2020.11.13-cp39-cp39-win_amd64.whl", hash = "sha256:a15f64ae3a027b64496a71ab1f722355e570c3fac5ba2801cafce846bf5af01d"},
     {file = "regex-2020.11.13.tar.gz", hash = "sha256:83d6b356e116ca119db8e7c6fc2983289d87b27b3fac238cfe5dca529d884562"},
 ]
+requests = [
+    {file = "requests-2.25.1-py2.py3-none-any.whl", hash = "sha256:c210084e36a42ae6b9219e00e48287def368a26d03a048ddad7bfee44f75871e"},
+    {file = "requests-2.25.1.tar.gz", hash = "sha256:27973dd4a904a4f13b263a19c866c13b92a39ed1c964655f025f3f8d3d75b804"},
+]
+rsa = [
+    {file = "rsa-4.7.2-py3-none-any.whl", hash = "sha256:78f9a9bf4e7be0c5ded4583326e7461e3a3c5aae24073648b4bdfa797d78c9d2"},
+    {file = "rsa-4.7.2.tar.gz", hash = "sha256:9d689e6ca1b3038bc82bf8d23e944b6b6037bc02301a574935b2dd946e0353b9"},
+]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
     {file = "six-1.15.0.tar.gz", hash = "sha256:30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"},
-]
-stringcase = [
-    {file = "stringcase-1.2.0.tar.gz", hash = "sha256:48a06980661908efe8d9d34eab2b6c13aefa2163b3ced26972902e3bdfd87008"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
@@ -1014,6 +1372,10 @@ typing-extensions = [
     {file = "typing_extensions-3.7.4.3-py2-none-any.whl", hash = "sha256:dafc7639cde7f1b6e1acc0f457842a83e722ccca8eef5270af2d74792619a89f"},
     {file = "typing_extensions-3.7.4.3-py3-none-any.whl", hash = "sha256:7cb407020f00f7bfc3cb3e7881628838e69d8f3fcab2f64742a5e76b2f841918"},
     {file = "typing_extensions-3.7.4.3.tar.gz", hash = "sha256:99d4073b617d30288f569d3f13d2bd7548c3a7e4c8de87db09a9d29bb3a4a60c"},
+]
+urllib3 = [
+    {file = "urllib3-1.26.3-py2.py3-none-any.whl", hash = "sha256:1b465e494e3e0d8939b50680403e3aedaa2bc434b7d5af64dfd3c958d7f5ae80"},
+    {file = "urllib3-1.26.3.tar.gz", hash = "sha256:de3eedaad74a2683334e282005cd8d7f22f4d55fa690a2a1020a416cb0a47e73"},
 ]
 wcwidth = [
     {file = "wcwidth-0.2.5-py2.py3-none-any.whl", hash = "sha256:beb4802a9cebb9144e99086eff703a642a13d6a0052920003a230f3294bbe784"},
