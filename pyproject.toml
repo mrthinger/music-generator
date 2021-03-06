@@ -6,13 +6,19 @@ authors = ["Evan Pierce <evanpierce@aim.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-torch = "^1.8.0"
 betterproto = "^1.2.5"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
 pytest = "^6.2.2"
 ipykernel = "^5.5.0"
+pandas = "^1.2.3"
+
+# Currently doesnt deconflict gpu versions of pytorch
+# fix for pytorch repo https://github.com/python-poetry/poetry/issues/1391#issuecomment-772200607
+# [[tool.poetry.source]]
+# name = "pytorch"
+# url = "https://eternalphane.github.io/pytorch-pypi/"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
