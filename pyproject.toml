@@ -9,6 +9,9 @@ python = "^3.9"
 betterproto = {git = "https://github.com/danielgtaylor/python-betterproto", rev = "6c1c41e9ccf7d020641e87f82e6419c3393a3841"}
 google-cloud-storage = "^1.36.1"
 python-dotenv = "^0.15.0"
+SoundFile = "^0.10.3"
+matplotlib = "^3.3.4"
+hydra-core = "^1.0.6"
 
 
 [tool.poetry.dev-dependencies]
