@@ -13,10 +13,6 @@ class IDataSource:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_num_songs(self) -> int:
-        raise NotImplementedError
-
-    @abstractmethod
     def get_song(self, idx: int, offset: float) -> torch.tensor:
         raise NotImplementedError
 
@@ -30,9 +26,6 @@ class DiskDataSource(IDataSource):
         super().__init__()
         self.cfg = cfg
         self.songs: list[str] = glob.glob(f"{cfg.disk_datasource.data_path}/*.wav")
-
-    def get_num_songs(self) -> int:
-        return len(self.songs)
 
     def get_song(self, idx: int, offset: float) -> torch.tensor:
 
