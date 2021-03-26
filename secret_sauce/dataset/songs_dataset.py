@@ -1,6 +1,5 @@
 import torch
 import random
-from torch.tensor import Tensor
 from secret_sauce.dataset.datasources import IDataSource
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 from torch.utils.data import Dataset
@@ -15,10 +14,10 @@ class SongsDataset(Dataset):
 
         self.durations, self.cumsum = datasource.get_total_duration()
 
-    def preprocess_sample(self, wave: torch.tensor) -> torch.tensor:
+    def preprocess_sample(self, wave: torch.Tensor) -> torch.Tensor:
         mix = random.uniform(0.4, 0.6)
         mono = mix * wave[0, ...] + (1 - mix) * wave[1, ...]
-        return mono
+        return mono.unsqueeze(0)  # add back chan dim [T] -> [C, T]
 
     def __getitem__(self, item_idx: int):
         song_idx, sec_offset = self.get_index_offset(item_idx)
