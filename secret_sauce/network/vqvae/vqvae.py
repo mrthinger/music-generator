@@ -44,6 +44,8 @@ class VQVAE(pl.LightningModule):
             nn.Tanh(),
         )
 
+        # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
+
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
