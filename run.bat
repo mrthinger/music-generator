@@ -1,0 +1,1 @@
+python .\.venv\Scripts\deepspeed.pt secret_sauce\train.py --deepspeed_config=.\secret_sauce\config\deepspeed.json

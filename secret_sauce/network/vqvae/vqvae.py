@@ -1,4 +1,3 @@
-import pytorch_lightning as pl
 import torch
 from torch.nn import functional as F
 import torchaudio
@@ -6,7 +5,7 @@ from ranger import Ranger
 from torch import nn, optim
 
 
-class VQVAE(pl.LightningModule):
+class VQVAE(nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential(
@@ -49,27 +48,28 @@ class VQVAE(pl.LightningModule):
     def forward(self, x):
         x = self.encoder(x)
         x = self.decoder(x)
+
         return x
 
-    def training_step(self, batch, batch_idx):
-        x = batch
-        y_hat = self(x)
-        loss = F.mse_loss(y_hat, x)
+    # def training_step(self, batch, batch_idx):
+    #     x = batch
+    #     y_hat = self(x)
+    #     loss = F.mse_loss(y_hat, x)
 
-        self.log("train_loss", loss)
+    #     self.log("train_loss", loss)
 
-        return {"loss": loss, "preds": y_hat}
+    #     return {"loss": loss, "preds": y_hat}
 
-    def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-        if batch_idx == 0 and self.current_epoch % 5 == 0:
-            preds = outputs[0][0]["extra"]["preds"]
-            song = preds[0].detach().cpu()
-            tensorboard = self.logger.experiment
-            tensorboard.add_audio(
-                tag=str(self.current_epoch), snd_tensor=song, sample_rate=22000
-            )
+    # def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
+    #     if batch_idx == 0 and self.current_epoch % 5 == 0:
+    #         preds = outputs[0][0]["extra"]["preds"]
+    #         song = preds[0].detach().cpu()
+    #         tensorboard = self.logger.experiment
+    #         tensorboard.add_audio(
+    #             tag=str(self.current_epoch), snd_tensor=song, sample_rate=22000
+    #         )
 
-    def configure_optimizers(self):
-        opt = optim.Adam(self.parameters(), lr=0.001)
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt)
-        return {"optimizer": opt, "lr_scheduler": scheduler, "monitor": "train_loss"}
+    # def configure_optimizers(self):
+    #     opt = optim.Adam(self.parameters(), lr=0.001)
+    #     scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt)
+    #     return {"optimizer": opt, "lr_scheduler": scheduler, "monitor": "train_loss"}
