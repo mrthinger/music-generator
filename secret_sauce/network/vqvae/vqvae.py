@@ -1,7 +1,6 @@
 import torch
 from torch.nn import functional as F
 import torchaudio
-from ranger import Ranger
 from torch import nn, optim
 
 
@@ -46,10 +45,10 @@ class VQVAE(nn.Module):
         # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
 
     def forward(self, x):
-        x = self.encoder(x)
-        x = self.decoder(x)
-
-        return x
+        y = self.encoder(x)
+        y = self.decoder(x)
+        loss = F.mse_loss(y, x)
+        return loss
 
     # def training_step(self, batch, batch_idx):
     #     x = batch

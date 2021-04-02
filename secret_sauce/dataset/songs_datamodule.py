@@ -1,6 +1,5 @@
 from torch.utils.data.dataloader import DataLoader
 from secret_sauce.dataset.songs_dataset import SongsDataset
-import pytorch_lightning as pl
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 from torch.utils.data import Dataset
 
@@ -19,7 +18,7 @@ class OffsetDataset(Dataset):
         return self.dataset[self.start + item]
 
 
-class SongsDataModule(pl.LightningDataModule):
+class SongsDataModule:
     def __init__(self, cfg: SongsDatasetConfig, dataset: SongsDataset):
         super().__init__()
         self.cfg = cfg
