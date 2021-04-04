@@ -2,21 +2,27 @@ FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
 
 ENV HOME=/root
 
+ARG TZ=America/New_York
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt update -y \
+    && apt install -y \
+    software-properties-common \
+    git wget curl g++
+
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt update -y \
     && apt install -y \
-    git wget curl software-properties-common g++ \
     python3.9 python3.9-distutils
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3.9 get-pip.py
 
-RUN echo -e "\nalias python=python3.9\nalias pip=pip3.9" >> $HOME/.bashrc \
-    && source $HOME/.bashrc
+RUN printf "\nalias python=python3.9\nalias pip=pip3.9\n" >> $HOME/.bashrc
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
     POETRY_NO_INTERACTION=1 \
     REQUIREMENTS_DIR="$HOME/pysetup" \
     PATH="$HOME/.poetry/bin:$PATH"
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python3.9 -
