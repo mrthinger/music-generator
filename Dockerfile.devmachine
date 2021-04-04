@@ -8,12 +8,12 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update -y \
     && apt install -y \
     software-properties-common \
-    git wget curl g++
+    git wget curl g++ libsndfile1
 
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt update -y \
     && apt install -y \
-    python3.9 python3.9-distutils
+    python3.9 python3.9-distutils python3.9-dev
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
     && python3.9 get-pip.py
