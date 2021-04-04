@@ -1,0 +1,22 @@
+FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime
+
+ENV HOME=/root
+
+RUN add-apt-repository ppa:deadsnakes/ppa \
+    && apt update -y \
+    && apt install -y \
+    git wget curl software-properties-common \
+    python3.9 python3.9-distutils
+
+RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3.9 get-pip.py
+
+RUN echo -e "\nalias python=python3.9\nalias pip=pip3.9" >> $HOME/.bashrc \
+    && source $HOME/.bashrc
+
+ENV POETRY_VIRTUALENVS_IN_PROJECT=true \
+    POETRY_NO_INTERACTION=1 \
+    REQUIREMENTS_DIR="$HOME/pysetup" \
+    PATH="$HOME/.poetry/bin:$PATH"
+
+RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
