@@ -93,6 +93,9 @@ def main():
             model.save_checkpoint(cfg.save_dir, tag=f'epoch-{epoch}')
 
 
+        if epoch % 100 == 0 and epoch != 0:
+            model.save_checkpoint(cfg.save_dir, tag=f"loss-{epoch_loss}--epoch-{epoch}")
+
 
 if __name__ == "__main__":
 
