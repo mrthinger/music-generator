@@ -13,9 +13,9 @@
   "scheduler": {
     "type": "WarmupLR",
     "params": {
-      "warmup_min_lr": 0,
-      "warmup_max_lr": 3e-6,
-      "warmup_num_steps": 400
+      "warmup_min_lr": 3e-8,
+      "warmup_max_lr": 3e-4,
+      "warmup_num_steps": 200
     }
   },
   "gradient_clipping": 1.0,

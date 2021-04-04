@@ -11,104 +11,33 @@ class VQVAE(nn.Module):
     def __init__(self, cfg: Config):
         super().__init__()
         self.cfg = cfg
+
         self.encoder = nn.Sequential(
-            Resnet1dBlock(1, 1),
-            Resnet1dBlock(1, 1),
-            Resnet1dBlock(1, 1),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=1),
-            Resnet1dBlock(1, 1, dilation=1),
-            nn.Conv1d(1, 32, 4, 2, 1),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            # nn.BatchNorm1d(32),
-            nn.Conv1d(32, 128, 4, 2, 1),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            # nn.BatchNorm1d(128),
-            nn.Conv1d(128, 256, 4, 2, 1),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            # nn.BatchNorm1d(256),
-            nn.Conv1d(256, 512, 4, 1, 1),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            # nn.BatchNorm1d(512),
-            nn.Conv1d(512, 64, 1, 1, 0),
+            nn.Conv1d(1, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.Conv1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.Conv1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.Conv1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
         )
 
         self.decoder = nn.Sequential(
-            nn.ConvTranspose1d(64, 512, 1, 1, 0),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            Resnet1dBlock(512, 512),
-            # nn.BatchNorm1d(512),
-            nn.ConvTranspose1d(512, 256, 4, 1, 1),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            Resnet1dBlock(256, 256),
-            # nn.BatchNorm1d(256),
-            nn.ConvTranspose1d(256, 128, 4, 2, 1),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            Resnet1dBlock(128, 128),
-            # nn.BatchNorm1d(128),
-            nn.ConvTranspose1d(128, 32, 4, 2, 1),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            Resnet1dBlock(32, 32),
-            # nn.BatchNorm1d(32),
-            nn.ConvTranspose1d(32, 1, 4, 2, 1),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=2),
-            Resnet1dBlock(1, 1, dilation=1),
-            Resnet1dBlock(1, 1, dilation=1),
-            Resnet1dBlock(1, 1, dilation=1),
-            # nn.Tanh(),
+            self.make_res1d(),
+            nn.ConvTranspose1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.ConvTranspose1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.ConvTranspose1d(64, 64, 4, 2, 1),
+            self.make_res1d(),
+            nn.ConvTranspose1d(64, 64, 4, 2, 1),
+            nn.Conv1d(64, 1, 3, 1, 1),
         )
         n_fft = 2048
         win_length = None
         hop_length = 128
-        n_mels = 1024
+        n_mels = 512
         self.mel_spectrogram = T.MelSpectrogram(
             sample_rate=self.cfg.dataset.sample_rate,
             n_fft=n_fft,
@@ -123,6 +52,18 @@ class VQVAE(nn.Module):
         )
         # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
 
+    def make_res1d(self):
+        return nn.Sequential(
+            Resnet1dBlock(64, 64, dilation=3 * 1),
+            Resnet1dBlock(64, 64, dilation=3 * 2),
+            Resnet1dBlock(64, 64, dilation=3 * 3),
+            Resnet1dBlock(64, 64, dilation=3 * 4),
+            Resnet1dBlock(64, 64, dilation=3 * 5),
+            Resnet1dBlock(64, 64, dilation=3 * 6),
+            Resnet1dBlock(64, 64, dilation=3 * 7),
+            Resnet1dBlock(64, 64, dilation=3 * 8),
+        )
+
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):
 
         self.mel_spectrogram.type(torch.FloatTensor).to(input.device)
@@ -134,7 +75,6 @@ class VQVAE(nn.Module):
         target = self.mel_spectrogram(target)
 
         loss = F.mse_loss(input, target)
-        loss = loss.mean()
         return loss
 
     def forward(self, x):
