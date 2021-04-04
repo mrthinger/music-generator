@@ -28,7 +28,6 @@ def main():
     cfg = Config()
     args = parse_args()
 
-    deepspeed.init_distributed()
     print(args)
     print(OmegaConf.to_yaml(cfg))
 
@@ -39,7 +38,8 @@ def main():
     print(len(ds))
 
     # datamod = SongsDataModule(cfg.dataset, ds)
-    # vqvae = VQVAE()
+    vqvae = VQVAE()
+    parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
 
     # parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
     # exdata: torch.Tensor = ds[0]
@@ -47,15 +47,18 @@ def main():
     # encoded = vqvae(exdata)
     # print(encoded)
 
-    seq = nn.Sequential(nn.Linear(1, 1))
+    model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
+        args=args, model=vqvae, model_parameters=parameters, training_data=ds
+    )
 
-    model, optimizer, _, _ = deepspeed.initialize(args=args, model=seq)
+    print(optimizer)
 
-    # for step, batch in enumerate(training_dataloader):
-    #     loss = model(batch)
-    #     model.backward(loss)
-    #     model.step()
-    #     lr_scheduler.step()
+    for step, batch in enumerate(training_dataloader):
+        batch = batch.to(model.local_rank)
+        loss = model(batch)
+        model.backward(loss)
+        model.step()
+        lr_scheduler.step()
 
 
 if __name__ == "__main__":

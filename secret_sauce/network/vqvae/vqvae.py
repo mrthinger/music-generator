@@ -45,8 +45,9 @@ class VQVAE(nn.Module):
         # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
 
     def forward(self, x):
-        y = self.encoder(x)
-        y = self.decoder(x)
+        y = x
+        y = self.encoder(y)
+        y = self.decoder(y)
         loss = F.mse_loss(y, x)
         return loss
 

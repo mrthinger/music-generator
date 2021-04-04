@@ -1,11 +1,11 @@
-FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-runtime
+FROM pytorch/pytorch:1.8.1-cuda11.1-cudnn8-devel
 
 ENV HOME=/root
 
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt update -y \
     && apt install -y \
-    git wget curl software-properties-common \
+    git wget curl software-properties-common g++ \
     python3.9 python3.9-distutils
 
 RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
