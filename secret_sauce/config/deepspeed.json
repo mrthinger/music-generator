@@ -1,5 +1,5 @@
 {
-  "train_batch_size": 16,
+  "train_batch_size": 32,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "Adam",
@@ -15,7 +15,15 @@
     "params": {
       "warmup_min_lr": 0,
       "warmup_max_lr": 3e-5,
-      "warmup_num_steps": 100
+      "warmup_num_steps": 200
     }
+  },
+  "fp16": {
+    "enabled": true,
+    "loss_scale": 0,
+    "initial_scale_power": 12,
+    "loss_scale_window": 1000,
+    "hysteresis": 2,
+    "min_loss_scale": 1
   }
 }

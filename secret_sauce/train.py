@@ -8,6 +8,7 @@ from omegaconf import OmegaConf
 import deepspeed
 import argparse
 from torch.utils.tensorboard import SummaryWriter
+import torch
 
 
 def parse_args():
@@ -32,15 +33,19 @@ def main():
 
     print(args)
     print(OmegaConf.to_yaml(cfg))
+    writer = SummaryWriter(cfg.save_dir)
 
     disk = DiskDataSource(cfg.dataset)
 
     ds = SongsDataset(cfg.dataset, disk)
 
-    print(len(ds))
-
     vqvae = VQVAE()
     parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
+
+    print(f"num ds elems: {len(ds)}")
+    print(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
+    writer.add_scalar("Dataset Elements", len(ds))
+    writer.add_scalar("Parameters", sum(p.numel() for p in vqvae.parameters()))
 
     model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
         args=args, model=vqvae, model_parameters=parameters, training_data=ds
@@ -51,14 +56,14 @@ def main():
 
     print(optimizer)
 
-    writer = SummaryWriter(cfg.save_dir)
-
     for epoch in range(cfg.epochs):
 
         epoch_loss = 0
 
         for step, batch in enumerate(training_dataloader):
-            batch = batch.to(model.local_rank)
+            if model.fp16_enabled:
+                batch = batch.type(torch.HalfTensor)
+            batch: torch.Tensor = batch.to(model.local_rank)
             y, loss = model(batch)
             epoch_loss += loss.item()
             model.backward(loss)
@@ -67,11 +72,11 @@ def main():
 
         epoch_loss /= len(training_dataloader)
         writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
-
         if epoch % 10 == 0:
+            song: torch.Tensor = y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
             writer.add_audio(
                 "Reconstruction",
-                y[0].detach().cpu(),
+                song,
                 sample_rate=22000,
                 global_step=model.global_steps,
             )

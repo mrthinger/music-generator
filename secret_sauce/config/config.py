@@ -11,11 +11,11 @@ class Config:
     dataset: SongsDatasetConfig = SongsDatasetConfig()
     cuda_avail: bool = torch.cuda.is_available()
 
-    epochs: int = 100
+    epochs: int = 500
 
     save_name: str = (
         os.getenv("SAVE_NAME")
         if os.getenv("SAVE_NAME") != None
-        else datetime.now().strftime("%d%m%Y%H%M%S")
+        else datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
     )
     save_dir: str = f"outputs/{save_name}"

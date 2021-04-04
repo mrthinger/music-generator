@@ -1,3 +1,4 @@
+from secret_sauce.network.vqvae.resnet import Resnet1dBlock
 import torch
 from torch.nn import functional as F
 import torchaudio
@@ -8,38 +9,49 @@ class VQVAE(nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = nn.Sequential(
-            nn.Conv1d(1, 64, 4, 2, 1),
-            nn.LeakyReLU(),
-            nn.BatchNorm1d(64),
-            nn.Conv1d(64, 128, 4, 2, 1),
-            nn.LeakyReLU(),
+            nn.Conv1d(1, 32, 4, 2, 1),
+            Resnet1dBlock(32, 32),
+            Resnet1dBlock(32, 32),
+            Resnet1dBlock(32, 32),
+            nn.BatchNorm1d(32),
+            nn.Conv1d(32, 128, 4, 2, 1),
+            Resnet1dBlock(128, 128),
+            Resnet1dBlock(128, 128),
+            Resnet1dBlock(128, 128),
             nn.BatchNorm1d(128),
             nn.Conv1d(128, 256, 4, 2, 1),
-            nn.LeakyReLU(),
+            Resnet1dBlock(256, 256),
             nn.BatchNorm1d(256),
             nn.Conv1d(256, 512, 4, 1, 1),
-            nn.LeakyReLU(),
+            Resnet1dBlock(512, 512),
             nn.BatchNorm1d(512),
-            nn.Conv1d(512, 1, 1, 1, 1),
+            nn.Conv1d(512, 1, 1, 1, 0),
             nn.LeakyReLU(),
             nn.BatchNorm1d(1),
         )
 
         self.decoder = nn.Sequential(
-            nn.ConvTranspose1d(1, 512, 1, 1, 1),
-            nn.LeakyReLU(),
+            nn.ConvTranspose1d(1, 512, 1, 1, 0),
+            Resnet1dBlock(512, 512),
             nn.BatchNorm1d(512),
             nn.ConvTranspose1d(512, 256, 4, 1, 1),
-            nn.LeakyReLU(),
+            Resnet1dBlock(256, 256),
             nn.BatchNorm1d(256),
             nn.ConvTranspose1d(256, 128, 4, 2, 1),
-            nn.LeakyReLU(),
+            Resnet1dBlock(128, 128),
+            Resnet1dBlock(128, 128),
+            Resnet1dBlock(128, 128),
             nn.BatchNorm1d(128),
-            nn.ConvTranspose1d(128, 64, 4, 2, 1),
-            nn.LeakyReLU(),
-            nn.BatchNorm1d(64),
-            nn.ConvTranspose1d(64, 1, 4, 2, 1),
-            nn.Tanh(),
+            nn.ConvTranspose1d(128, 32, 4, 2, 1),
+            Resnet1dBlock(32, 32),
+            Resnet1dBlock(32, 32),
+            Resnet1dBlock(32, 32),
+            nn.BatchNorm1d(32),
+            nn.ConvTranspose1d(32, 1, 4, 2, 1),
+            Resnet1dBlock(1, 1, dilation=2),
+            Resnet1dBlock(1, 1, dilation=1),
+            Resnet1dBlock(1, 1, dilation=1),
+            # nn.Tanh(),
         )
 
         # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
