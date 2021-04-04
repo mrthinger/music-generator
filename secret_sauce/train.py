@@ -28,7 +28,7 @@ def main():
     cfg = Config()
     args = parse_args()
 
-    deepspeed.init_distributed(dist_backend="gloo")
+    deepspeed.init_distributed()
     print(args)
     print(OmegaConf.to_yaml(cfg))
 

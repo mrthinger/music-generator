@@ -5,7 +5,7 @@ description = ""
 authors = ["Evan Pierce <evanpierce@aim.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 betterproto = {git = "https://github.com/danielgtaylor/python-betterproto", rev = "6c1c41e9ccf7d020641e87f82e6419c3393a3841"}
 google-cloud-storage = "^1.36.1"
 python-dotenv = "^0.15.0"
