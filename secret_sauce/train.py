@@ -51,6 +51,8 @@ def main():
     model: DeepSpeedEngine = model
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
+    # model.load_checkpoint("./outputs/04-04-2021-16-02-28", tag="epoch-300")
+
     if model.global_rank == 0:
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))

@@ -11,7 +11,7 @@ class Config:
     dataset: SongsDatasetConfig = SongsDatasetConfig()
     cuda_avail: bool = torch.cuda.is_available()
 
-    epochs: int = 500
+    epochs: int = 1000
 
     save_name: str = (
         os.getenv("SAVE_NAME")
