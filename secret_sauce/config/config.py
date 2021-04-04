@@ -2,7 +2,7 @@ from dataclasses import MISSING, dataclass
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 import torch
 import os
-import datetime
+from datetime import datetime
 
 
 @dataclass
