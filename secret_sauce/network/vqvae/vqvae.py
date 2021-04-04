@@ -48,8 +48,9 @@ class VQVAE(nn.Module):
         y = x
         y = self.encoder(y)
         y = self.decoder(y)
+
         loss = F.mse_loss(y, x)
-        return loss
+        return y, loss
 
     # def training_step(self, batch, batch_idx):
     #     x = batch

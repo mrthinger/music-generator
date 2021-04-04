@@ -1,3 +1,5 @@
+from deepspeed.runtime.dataloader import DeepSpeedDataLoader
+from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
 from secret_sauce.dataset.songs_dataset import SongsDataset
 from secret_sauce.dataset.datasources import DiskDataSource
@@ -5,7 +7,7 @@ from secret_sauce.config.config import Config
 from omegaconf import OmegaConf
 import deepspeed
 import argparse
-from torch import nn
+from torch.utils.tensorboard import SummaryWriter
 
 
 def parse_args():
@@ -37,28 +39,42 @@ def main():
 
     print(len(ds))
 
-    # datamod = SongsDataModule(cfg.dataset, ds)
     vqvae = VQVAE()
     parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
-
-    # parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
-    # exdata: torch.Tensor = ds[0]
-    # exdata = exdata.view(1, 1, -1)
-    # encoded = vqvae(exdata)
-    # print(encoded)
 
     model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
         args=args, model=vqvae, model_parameters=parameters, training_data=ds
     )
 
+    model: DeepSpeedEngine = model
+    training_dataloader: DeepSpeedDataLoader = training_dataloader
+
     print(optimizer)
 
-    for step, batch in enumerate(training_dataloader):
-        batch = batch.to(model.local_rank)
-        loss = model(batch)
-        model.backward(loss)
-        model.step()
-        lr_scheduler.step()
+    writer = SummaryWriter(cfg.save_dir)
+
+    for epoch in range(cfg.epochs):
+
+        epoch_loss = 0
+
+        for step, batch in enumerate(training_dataloader):
+            batch = batch.to(model.local_rank)
+            y, loss = model(batch)
+            epoch_loss += loss.item()
+            model.backward(loss)
+            model.step()
+            lr_scheduler.step()
+
+        epoch_loss /= len(training_dataloader)
+        writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
+
+        if epoch % 10 == 0:
+            writer.add_audio(
+                "Reconstruction",
+                y[0].detach().cpu(),
+                sample_rate=22000,
+                global_step=model.global_steps,
+            )
 
 
 if __name__ == "__main__":
