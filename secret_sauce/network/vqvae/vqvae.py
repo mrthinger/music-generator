@@ -83,7 +83,7 @@ class VQVAE(nn.Module):
         y = self.decoder(y)
 
         spec_loss = self.spec_loss(y, x)
-        print(spec_loss)
+        # print(spec_loss)
 
         loss = F.mse_loss(y, x)
 

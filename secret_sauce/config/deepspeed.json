@@ -14,8 +14,8 @@
     "type": "WarmupLR",
     "params": {
       "warmup_min_lr": 3e-8,
-      "warmup_max_lr": 3e-4,
-      "warmup_num_steps": 200
+      "warmup_max_lr": 2e-4,
+      "warmup_num_steps": 50
     }
   },
   "gradient_clipping": 1.0,
