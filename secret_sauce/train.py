@@ -35,12 +35,11 @@ def main():
     print(args)
     print(OmegaConf.to_yaml(cfg))
 
-
     disk = DiskDataSource(cfg.dataset)
 
     ds = SongsDataset(cfg.dataset, disk)
 
-    vqvae = VQVAE()
+    vqvae = VQVAE(cfg)
 
     print(f"num ds elems: {len(ds)}")
     print(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
@@ -52,13 +51,10 @@ def main():
     model: DeepSpeedEngine = model
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
-
-    
     if model.global_rank == 0:
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))
         writer.add_scalar("Parameters", sum(p.numel() for p in vqvae.parameters()))
-
 
     for epoch in range(cfg.epochs):
 
@@ -80,7 +76,9 @@ def main():
             writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
 
             if epoch % 10 == 0:
-                song: torch.Tensor = y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
+                song: torch.Tensor = (
+                    y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
+                )
                 writer.add_audio(
                     "Reconstruction",
                     song,
@@ -88,9 +86,8 @@ def main():
                     global_step=model.global_steps,
                 )
 
-        
         if epoch % 100 == 0 and epoch != 0:
-            model.save_checkpoint(cfg.save_dir, tag=f'epoch-{epoch}')
+            model.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
 
 
 if __name__ == "__main__":
