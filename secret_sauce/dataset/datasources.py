@@ -27,20 +27,30 @@ class DiskDataSource(IDataSource):
         self.cfg = cfg
         self.songs: list[str] = glob.glob(f"{cfg.disk_datasource.data_path}/*.wav")
 
+        if self.cfg.disk_datasource.cache:
+            self.songs_cache = torch.Tensor()
+            for song in self.songs:
+                wave, _ = torchaudio.load(song)
+                self.songs_cache = torch.cat((self.songs_cache, wave), dim=-1)
+
     def get_song(self, idx: int, offset: float) -> torch.Tensor:
 
         frame_offset = int(offset * self.cfg.sample_rate)
         num_frames = int(self.cfg.sample_len * self.cfg.sample_rate)
 
-        with open(self.songs[idx], mode="rb") as song:
-            wave, sample_rate = torchaudio.load(
-                song, frame_offset=frame_offset, num_frames=num_frames
-            )
-            assert (
-                sample_rate == self.cfg.sample_rate
-            ), f"samplerate off!: {self.songs[idx]}"
+        if self.cfg.disk_datasource.cache:
+            return self.songs_cache[..., frame_offset : frame_offset + num_frames]
 
-        return wave
+        else:
+            with open(self.songs[idx], mode="rb") as song:
+                wave, sample_rate = torchaudio.load(
+                    song, frame_offset=frame_offset, num_frames=num_frames
+                )
+                assert (
+                    sample_rate == self.cfg.sample_rate
+                ), f"samplerate off!: {self.songs[idx]}"
+
+            return wave
 
     def get_total_duration(self) -> tuple[np.ndarray]:
         durations = np.array([get_duration_sec(song) for song in self.songs])
