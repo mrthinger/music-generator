@@ -6,3 +6,4 @@ dist
 .env
 gcp-admin-key.json
 outputs
+DeepSpeed

@@ -30,31 +30,35 @@ def parse_args():
 def main():
     cfg = Config()
     args = parse_args()
+    deepspeed.init_distributed()
 
     print(args)
     print(OmegaConf.to_yaml(cfg))
-    writer = SummaryWriter(cfg.save_dir)
+
 
     disk = DiskDataSource(cfg.dataset)
 
     ds = SongsDataset(cfg.dataset, disk)
 
     vqvae = VQVAE()
-    parameters = filter(lambda p: p.requires_grad, vqvae.parameters())
 
     print(f"num ds elems: {len(ds)}")
     print(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
-    writer.add_scalar("Dataset Elements", len(ds))
-    writer.add_scalar("Parameters", sum(p.numel() for p in vqvae.parameters()))
 
     model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
-        args=args, model=vqvae, model_parameters=parameters, training_data=ds
+        args=args, model=vqvae, model_parameters=vqvae.parameters(), training_data=ds
     )
 
     model: DeepSpeedEngine = model
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
-    print(optimizer)
+
+    
+    if model.global_rank == 0:
+        writer = SummaryWriter(cfg.save_dir)
+        writer.add_scalar("Dataset Elements", len(ds))
+        writer.add_scalar("Parameters", sum(p.numel() for p in vqvae.parameters()))
+
 
     for epoch in range(cfg.epochs):
 
@@ -71,15 +75,23 @@ def main():
             lr_scheduler.step()
 
         epoch_loss /= len(training_dataloader)
-        writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
-        if epoch % 10 == 0:
-            song: torch.Tensor = y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
-            writer.add_audio(
-                "Reconstruction",
-                song,
-                sample_rate=22000,
-                global_step=model.global_steps,
-            )
+
+        if model.global_rank == 0:
+            writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
+
+            if epoch % 10 == 0:
+                song: torch.Tensor = y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
+                writer.add_audio(
+                    "Reconstruction",
+                    song,
+                    sample_rate=22000,
+                    global_step=model.global_steps,
+                )
+
+        
+        if epoch % 100 == 0 and epoch != 0:
+            model.save_checkpoint(cfg.save_dir, tag=f'epoch-{epoch}')
+
 
 
 if __name__ == "__main__":
