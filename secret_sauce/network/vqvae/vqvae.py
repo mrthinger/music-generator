@@ -84,15 +84,19 @@ class VQVAE(nn.Module):
         loss = F.mse_loss(input, target)
         return loss
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor, encode_only: bool = False):
         y = x
 
         y = self.encoder(y)
         y, vqloss = self.vector_quantizer(y)
-        print_master(y.shape[2])
+
+        if encode_only:
+            return y
+
         y = self.decoder(y)
 
 
+        # print_master(y.shape[2])
         spec_loss = self.spec_loss(y, x)
         # print(spec_loss)
 
@@ -101,3 +105,17 @@ class VQVAE(nn.Module):
         loss += vqloss
 
         return y, loss
+
+    def encode(self, x: torch.Tensor):
+        y = x
+
+        y = self.encoder(y)
+        y, _ = self.vector_quantizer(y)
+
+        return y
+
+    def decode(self, x: torch.Tensor):
+        y = x
+        y = self.decoder(y)
+
+        return y

@@ -1,4 +1,5 @@
 from dataclasses import MISSING, dataclass
+from typing import Optional
 from secret_sauce.config.vqvae_config import VQVAEConfig
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 import torch
@@ -21,3 +22,7 @@ class Config:
         else datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
     )
     save_dir: str = f"outputs/{save_name}"
+
+
+    load_dir: Optional[str] = None
+    load_tag: Optional[str] = None

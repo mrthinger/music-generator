@@ -10,7 +10,9 @@ from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
 from secret_sauce.dataset.songs_dataset import SongsDataset
 from secret_sauce.dataset.datasources import DiskDataSource
+from secret_sauce.util.util import print_master
 from secret_sauce.config.config import Config
+
 from omegaconf import OmegaConf
 import deepspeed
 import argparse
@@ -37,10 +39,8 @@ def main():
     args = parse_args()
     deepspeed.init_distributed()
 
-    print(torch.distributed.get_rank())
-
-    print(args)
-    print(OmegaConf.to_yaml(cfg))
+    print_master(args)
+    print_master(OmegaConf.to_yaml(cfg))
 
     disk = DiskDataSource(cfg.dataset)
 
@@ -48,8 +48,8 @@ def main():
 
     vqvae = VQVAE(cfg)
 
-    print(f"num ds elems: {len(ds)}")
-    print(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
+    print_master(f"num ds elems: {len(ds)}")
+    print_master(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
 
     model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
         args=args, model=vqvae, model_parameters=vqvae.parameters(), training_data=ds
@@ -58,7 +58,8 @@ def main():
     model: DeepSpeedEngine = model
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
-    # model.load_checkpoint("./outputs/04-04-2021-16-02-28", tag="epoch-300")
+    if cfg.load_dir != None and cfg.load_tag != None:
+        model.load_checkpoint(cfg.load_dir, tag=cfg.load_tag)
 
     if model.global_rank == 0:
         writer = SummaryWriter(cfg.save_dir)
@@ -100,5 +101,4 @@ def main():
 
 
 if __name__ == "__main__":
-
     main()
