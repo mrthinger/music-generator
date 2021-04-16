@@ -1,3 +1,10 @@
+import torch
+torch.manual_seed(0)
+import random
+random.seed(0)
+import numpy as np
+np.random.seed(0)
+
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
@@ -8,8 +15,6 @@ from omegaconf import OmegaConf
 import deepspeed
 import argparse
 from torch.utils.tensorboard import SummaryWriter
-import torch
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description="VAE Train")
@@ -31,6 +36,8 @@ def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
+
+    print(torch.distributed.get_rank())
 
     print(args)
     print(OmegaConf.to_yaml(cfg))

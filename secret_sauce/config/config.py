@@ -1,4 +1,5 @@
 from dataclasses import MISSING, dataclass
+from secret_sauce.config.vqvae_config import VQVAEConfig
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 import torch
 import os
@@ -10,6 +11,7 @@ class Config:
     name: str = "TensorBeat Generation"
     dataset: SongsDatasetConfig = SongsDatasetConfig()
     cuda_avail: bool = torch.cuda.is_available()
+    vqvae: VQVAEConfig = VQVAEConfig()
 
     epochs: int = 1000
 

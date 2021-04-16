@@ -1,3 +1,5 @@
+from secret_sauce.util.util import print_master
+from secret_sauce.network.vqvae.vector_quantizer import VectorQuantizer
 from secret_sauce.network.vqvae.resnet import Resnet1dBlock
 import torch
 from torch.nn import functional as F
@@ -15,20 +17,22 @@ class VQVAE(nn.Module):
         self.encoder = nn.Sequential(
             nn.Conv1d(1, 64, 4, 2, 1),
             self.make_res1d(),
-            nn.Conv1d(64, 64, 4, 2, 1),
-            self.make_res1d(),
+            # nn.Conv1d(64, 64, 4, 2, 1),
+            # self.make_res1d(),
             nn.Conv1d(64, 64, 4, 2, 1),
             self.make_res1d(),
             nn.Conv1d(64, 64, 4, 2, 1),
             self.make_res1d(),
         )
 
+        self.vector_quantizer = VectorQuantizer(self.cfg.vqvae.num_embeddings, self.cfg.vqvae.embedding_dim)
+
         self.decoder = nn.Sequential(
             self.make_res1d(),
             nn.ConvTranspose1d(64, 64, 4, 2, 1),
             self.make_res1d(),
-            nn.ConvTranspose1d(64, 64, 4, 2, 1),
-            self.make_res1d(),
+            # nn.ConvTranspose1d(64, 64, 4, 2, 1),
+            # self.make_res1d(),
             nn.ConvTranspose1d(64, 64, 4, 2, 1),
             self.make_res1d(),
             nn.ConvTranspose1d(64, 64, 4, 2, 1),
@@ -82,37 +86,18 @@ class VQVAE(nn.Module):
 
     def forward(self, x):
         y = x
+
         y = self.encoder(y)
+        y, vqloss = self.vector_quantizer(y)
+        print_master(y.shape[2])
         y = self.decoder(y)
+
 
         spec_loss = self.spec_loss(y, x)
         # print(spec_loss)
 
         loss = F.mse_loss(y, x)
-
         loss += spec_loss
+        loss += vqloss
 
         return y, loss
-
-    # def training_step(self, batch, batch_idx):
-    #     x = batch
-    #     y_hat = self(x)
-    #     loss = F.mse_loss(y_hat, x)
-
-    #     self.log("train_loss", loss)
-
-    #     return {"loss": loss, "preds": y_hat}
-
-    # def on_train_batch_end(self, outputs, batch, batch_idx, dataloader_idx):
-    #     if batch_idx == 0 and self.current_epoch % 5 == 0:
-    #         preds = outputs[0][0]["extra"]["preds"]
-    #         song = preds[0].detach().cpu()
-    #         tensorboard = self.logger.experiment
-    #         tensorboard.add_audio(
-    #             tag=str(self.current_epoch), snd_tensor=song, sample_rate=22000
-    #         )
-
-    # def configure_optimizers(self):
-    #     opt = optim.Adam(self.parameters(), lr=0.001)
-    #     scheduler = optim.lr_scheduler.ReduceLROnPlateau(opt)
-    #     return {"optimizer": opt, "lr_scheduler": scheduler, "monitor": "train_loss"}
