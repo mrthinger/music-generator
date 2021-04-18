@@ -1,5 +1,6 @@
 from dataclasses import MISSING, dataclass
 from typing import Optional
+from secret_sauce.config.basic_transformer_config import BasicTransformerConfig
 from secret_sauce.config.vqvae_config import VQVAEConfig
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 import torch
@@ -13,6 +14,7 @@ class Config:
     dataset: SongsDatasetConfig = SongsDatasetConfig()
     cuda_avail: bool = torch.cuda.is_available()
     vqvae: VQVAEConfig = VQVAEConfig()
+    transformer: BasicTransformerConfig = BasicTransformerConfig()
 
     epochs: int = 1000
 

@@ -3,3 +3,4 @@ torchvision==0.9.1+cu111
 torchaudio===0.8.1
 tensorboard==2.4.1
 torch_tb_profiler==0.1.0
+torchtyping==0.1.1
