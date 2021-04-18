@@ -3,6 +3,7 @@ from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
 import torch
 
 torch.manual_seed(0)
+torch.cuda.empty_cache() 
 import random
 
 random.seed(0)
