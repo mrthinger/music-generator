@@ -57,7 +57,7 @@ def main():
     print_master(OmegaConf.to_yaml(cfg))
 
     ds = BasicCompressedDataset(
-        "/root/secret_sauce/nggyu22000-compressed.pt", window_size=1024
+        "/root/secret_sauce/nggyu22000-compressed.pt", window_size=256
     )
 
     transformer = BasicTransformer(cfg)
