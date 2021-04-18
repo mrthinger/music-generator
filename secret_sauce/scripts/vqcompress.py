@@ -94,8 +94,11 @@ def main():
 
 
     if dist.get_rank() == 0:
+        import itertools
+        data = list(itertools.chain(*data))
+        data = torch.stack(data).view(-1).type(torch.int16)
         print(data)
-        torch.save(data, "./feats.pt")
+        torch.save(data, "./nggyu22000-compressed.pt")
 
 
 

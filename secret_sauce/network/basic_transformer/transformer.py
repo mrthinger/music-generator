@@ -3,7 +3,6 @@ from secret_sauce.config.config import Config
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.nn import TransformerEncoder, TransformerEncoderLayer
 from torchtyping import TensorType
 
 
@@ -39,19 +38,20 @@ class BasicTransformer(nn.Module):
         self.cfg = cfg
         self.model_type = "Transformer"
         self.pos_encoder = PositionalEncoding(cfg.vqvae.embedding_dim, max_len=600000)
-        encoder_layers = TransformerEncoderLayer(
-            cfg.vqvae.embedding_dim,
-            cfg.transformer.heads_num,
-            cfg.transformer.ff_dim,
-            cfg.transformer.dropout,
-        )
-        self.transformer_encoder = TransformerEncoder(
-            encoder_layers, cfg.transformer.blocks_num
-        )
+        self.encoder_blocks = nn.ModuleList([
+            nn.TransformerEncoderLayer(
+                cfg.vqvae.embedding_dim,
+                cfg.transformer.heads_num,
+                cfg.transformer.ff_dim,
+                cfg.transformer.dropout,
+            )
+            for _ in range(cfg.transformer.blocks_num)
+        ])
+
         self.codebook = nn.Embedding(cfg.vqvae.num_embeddings, cfg.vqvae.embedding_dim)
         self.predictions = nn.Linear(cfg.vqvae.embedding_dim, cfg.vqvae.num_embeddings)
+        self.critereon = nn.CrossEntropyLoss()
 
-        self.init_weights()
 
     def generate_square_subsequent_mask(self, sz: int):
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
@@ -62,11 +62,6 @@ class BasicTransformer(nn.Module):
         )
         return mask
 
-    def init_weights(self):
-        initrange = 0.1
-        self.predictions.bias.data.zero_()
-        self.predictions.weight.data.uniform_(-initrange, initrange)
-
     def load_embeddings(self, embeddings: torch.Tensor):
         self.codebook.weight.data = embeddings
 
@@ -74,18 +69,28 @@ class BasicTransformer(nn.Module):
         self,
         src: TensorType["batch", "timestep"],
         src_positions: TensorType["batch", "timestep"],
-        src_mask: TensorType["timestep", "timestep"],
+        target: TensorType["batch", "timestep"],
     ):
         src: torch.Tensor = src
-        src = self.codebook(src) * math.sqrt(self.cfg.vqvae.embedding_dim)
-        
-        
-        src = self.pos_encoder(src, src_positions)
-        
-        # dont have gradients flow into codebook
-        src = src.detach()
+        B, T = src.shape
 
-        src = src.permute(1,0,2)
-        output = self.transformer_encoder(src, src_mask)
+        # dont have gradients flow into codebook
+        # with torch.no_grad():
+        src = self.codebook(src) * math.sqrt(self.cfg.vqvae.embedding_dim)
+        src = self.pos_encoder(src, src_positions)
+
+        output = src.permute(1, 0, 2)
+        src_mask = self.generate_square_subsequent_mask(T).to(device=output.device, dtype=output.dtype)
+
+        for block in self.encoder_blocks:
+            output = block(output, src_mask)
+
+        output = output.permute(1, 0, 2)
         output = self.predictions(output)
-        return output
+
+
+
+        prediction = output.view(-1, self.cfg.vqvae.num_embeddings)
+        target = target.reshape(-1)
+        loss = self.critereon(prediction, target)
+        return output, loss

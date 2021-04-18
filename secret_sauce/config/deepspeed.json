@@ -1,5 +1,5 @@
 {
-  "train_batch_size": 6,
+  "train_batch_size": 12,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "AdamW",
