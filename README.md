@@ -13,7 +13,5 @@ Secret Sauce is the code to train a music generating neural network.
 Poetry doesnt play nicely with cuda versions of torch
 
 ```sh
-poetry install
-activate venv
 ./setup.sh
 ```
