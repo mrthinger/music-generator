@@ -38,10 +38,10 @@ class BasicTransformer(nn.Module):
         super(BasicTransformer, self).__init__()
         self.cfg = cfg
         self.model_type = "Transformer"
-        self.pos_encoder = PositionalEncoding(cfg.vqvae.embedding_dim, max_len=600000)
+        self.pos_encoder = PositionalEncoding(cfg.transformer.width, max_len=600000)
         self.encoder_blocks = nn.ModuleList([
             nn.TransformerEncoderLayer(
-                cfg.vqvae.embedding_dim,
+                cfg.transformer.width,
                 cfg.transformer.heads_num,
                 cfg.transformer.ff_dim,
                 cfg.transformer.dropout,
@@ -49,8 +49,9 @@ class BasicTransformer(nn.Module):
             for _ in range(cfg.transformer.blocks_num)
         ])
 
-        self.codebook = nn.Embedding(cfg.vqvae.num_embeddings, cfg.vqvae.embedding_dim)
-        self.predictions = nn.Linear(cfg.vqvae.embedding_dim, cfg.vqvae.num_embeddings)
+        self.codebook = nn.Embedding(cfg.vqvae.num_embeddings, cfg.transformer.width)
+        nn.init.normal_(self.codebook.weight, std=0.02 * .7)
+        self.predictions = nn.Linear(cfg.transformer.width, cfg.vqvae.num_embeddings)
         self.critereon = nn.CrossEntropyLoss()
 
 
@@ -63,8 +64,6 @@ class BasicTransformer(nn.Module):
         )
         return mask
 
-    def load_embeddings(self, embeddings: torch.Tensor):
-        self.codebook.weight.data = embeddings
 
     def forward(
         self,
@@ -77,13 +76,11 @@ class BasicTransformer(nn.Module):
         src: torch.Tensor = src
         B, T = src.shape
 
-        # dont have gradients flow into codebook
-        with torch.no_grad():
-            src = self.codebook(src) * math.sqrt(self.cfg.vqvae.embedding_dim)
-            src = self.pos_encoder(src, src_positions)
+        src = self.codebook(src) * math.sqrt(self.cfg.transformer.width)
+        src = self.pos_encoder(src, src_positions)
 
-            output = src.permute(1, 0, 2)
-            src_mask = self.generate_square_subsequent_mask(T, device=device, dtype=output.dtype)
+        output = src.permute(1, 0, 2)
+        src_mask = self.generate_square_subsequent_mask(T, device=device, dtype=output.dtype)
 
         for block in self.encoder_blocks:
             output = block(output, src_mask)
@@ -97,6 +94,5 @@ class BasicTransformer(nn.Module):
         prediction = output.view(-1, self.cfg.vqvae.num_embeddings)
         target = target.reshape(-1)
         loss = self.critereon(prediction, target)
-
 
         return output, loss

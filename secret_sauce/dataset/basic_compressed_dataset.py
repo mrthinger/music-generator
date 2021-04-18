@@ -23,5 +23,4 @@ class BasicCompressedDataset(Dataset):
         return torch.stack((x, x_pos, y))
 
     def __len__(self):
-        return 16
-        # return int(np.floor(self.num_tokens / self.window_size)) - 1
+        return int(np.floor(self.num_tokens / self.window_size)) - 1

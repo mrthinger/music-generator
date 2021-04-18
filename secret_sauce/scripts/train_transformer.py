@@ -1,9 +1,12 @@
+import torch
+torch.manual_seed(0)
+# torch.backends.cudnn.benchmark = True
+# torch.backends.cudnn.enabled = True
+
+
 from secret_sauce.network.basic_transformer.transformer import BasicTransformer
 from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
-import torch
 
-torch.manual_seed(0)
-torch.cuda.empty_cache() 
 import random
 
 random.seed(0)
@@ -46,24 +49,18 @@ def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
+    deepspeed.checkpointing.configure(None,
+        deepspeed_config=args.deepspeed_config, partition_activations=True
+    )
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
 
     ds = BasicCompressedDataset(
-        "/root/secret_sauce/nggyu22000-compressed.pt", window_size=8192
+        "/root/secret_sauce/nggyu22000-compressed.pt", window_size=1024
     )
 
     transformer = BasicTransformer(cfg)
-    t = torch.load(
-        r"/root/secret_sauce/vaewts/04-16-2021-10-58-09/epoch-900/mp_rank_00_model_states.pt",
-        map_location="cpu",
-    )
-    embed_wts: torch.tensor = t["module"]["vector_quantizer.embedding.weight"]
-    transformer.load_embeddings(embed_wts)
-
-    del t
-    t = None
 
     print_master(f"num ds elems: {len(ds)}")
     print_master(f"num params: {sum(p.numel() for p in transformer.parameters())}")
@@ -92,7 +89,6 @@ def main():
 
         epoch_loss = 0
 
-  
         for step, batch in enumerate(training_dataloader):
             batch: torch.Tensor = batch.to(model.local_rank, dtype=torch.long)
 
