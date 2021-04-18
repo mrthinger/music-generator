@@ -1,4 +1,5 @@
 import math
+from secret_sauce.util.timer import Timer
 from secret_sauce.config.config import Config
 import torch
 import torch.nn as nn
@@ -53,10 +54,10 @@ class BasicTransformer(nn.Module):
         self.critereon = nn.CrossEntropyLoss()
 
 
-    def generate_square_subsequent_mask(self, sz: int):
-        mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
+    def generate_square_subsequent_mask(self, sz: int, device, dtype):
+        mask = (torch.triu(torch.ones(sz, sz, device=device)) == 1).transpose(0, 1)
         mask = (
-            mask.float()
+            mask.to(dtype)
             .masked_fill(mask == 0, float("-inf"))
             .masked_fill(mask == 1, float(0.0))
         )
@@ -71,19 +72,22 @@ class BasicTransformer(nn.Module):
         src_positions: TensorType["batch", "timestep"],
         target: TensorType["batch", "timestep"],
     ):
+
+        device = src.device
         src: torch.Tensor = src
         B, T = src.shape
 
         # dont have gradients flow into codebook
-        # with torch.no_grad():
-        src = self.codebook(src) * math.sqrt(self.cfg.vqvae.embedding_dim)
-        src = self.pos_encoder(src, src_positions)
+        with torch.no_grad():
+            src = self.codebook(src) * math.sqrt(self.cfg.vqvae.embedding_dim)
+            src = self.pos_encoder(src, src_positions)
 
-        output = src.permute(1, 0, 2)
-        src_mask = self.generate_square_subsequent_mask(T).to(device=output.device, dtype=output.dtype)
+            output = src.permute(1, 0, 2)
+            src_mask = self.generate_square_subsequent_mask(T, device=device, dtype=output.dtype)
 
         for block in self.encoder_blocks:
             output = block(output, src_mask)
+
 
         output = output.permute(1, 0, 2)
         output = self.predictions(output)
@@ -93,4 +97,6 @@ class BasicTransformer(nn.Module):
         prediction = output.view(-1, self.cfg.vqvae.num_embeddings)
         target = target.reshape(-1)
         loss = self.critereon(prediction, target)
+
+
         return output, loss
