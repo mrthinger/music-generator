@@ -50,7 +50,7 @@ def main():
     args = parse_args()
     deepspeed.init_distributed()
     deepspeed.checkpointing.configure(None,
-        deepspeed_config=args.deepspeed_config, partition_activations=True
+        deepspeed_config=args.deepspeed_config
     )
 
     print_master(args)
