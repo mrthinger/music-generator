@@ -39,15 +39,15 @@
 
   "zero_optimization": {
     "stage": 2,
-    "cpu_offload": true,
+    "cpu_offload": false,
     "contiguous_gradients": false,
     "overlap_comm": false,
     "reduce_bucket_size": 5e6,
     "allgather_bucket_size": 5e6
   },
   "activation_checkpointing": {
-    "partition_activations": true,
-    "cpu_checkpointing": true,
+    "partition_activations": false,
+    "cpu_checkpointing": false,
     "profile": false
   }
 }
