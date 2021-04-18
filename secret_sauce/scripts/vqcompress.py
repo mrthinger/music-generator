@@ -73,14 +73,14 @@ def main():
         data = []
 
     for step, batch in enumerate(training_dataloader):
-
-            
-
-        tensor_list = [torch.zeros((1, 64, 8250), dtype=torch.float32).to(model.local_rank) for _ in range(model.world_size)]
-
         if model.fp16_enabled:
             batch = batch.type(torch.HalfTensor)
         batch: torch.Tensor = batch.to(model.local_rank)
+
+
+        tensor_list = [torch.zeros((1, 1, 8250), dtype=torch.float32).to(model.local_rank) for _ in range(model.world_size)]
+
+        
         
         y: torch.Tensor = model(batch, encode_only=True)
         y = y.detach().type(torch.float32)

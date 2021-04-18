@@ -88,10 +88,15 @@ class VQVAE(nn.Module):
         y = x
 
         y = self.encoder(y)
-        y, vqloss = self.vector_quantizer(y)
 
+        
         if encode_only:
-            return y
+            return self.vector_quantizer.get_inds(y)
+
+
+
+
+        y, vqloss = self.vector_quantizer(y)
 
         y = self.decoder(y)
 

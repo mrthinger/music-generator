@@ -26,6 +26,23 @@ class VectorQuantizer(nn.Module):
         # deepspeed.zero.register_external_parameter(self,
         #                                            self.language_model.embedding.word_embeddings.weight)
 
+    def get_inds(self, latents: torch.Tensor):
+        latents = latents.permute(0, 2, 1).contiguous()  # [B x D x T] -> [B x T x D]
+        latents_shape = latents.shape
+        B, T, D = latents.shape
+        flat_latents = latents.view(-1, self.D)  # [BT x D]
+
+        # Compute L2 distance between latents and embedding weights
+        dist = torch.sum(flat_latents ** 2, dim=1, keepdim=True) + \
+               torch.sum(self.embedding.weight ** 2, dim=1) - \
+               2 * torch.matmul(flat_latents, self.embedding.weight.t())  # [BT x K]
+
+        # Get the encoding that has the min distance
+        encoding_inds = torch.argmin(dist, dim=1).unsqueeze(1)  # [BT, 1]
+
+        return encoding_inds.view(B, T, 1).permute(0,2,1).contiguous()
+
+
     def forward(self, latents: torch.Tensor) -> torch.Tensor:
         latents = latents.permute(0, 2, 1).contiguous()  # [B x D x T] -> [B x T x D]
         latents_shape = latents.shape
