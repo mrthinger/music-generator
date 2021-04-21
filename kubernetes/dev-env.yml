@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: tensorbeat
+  name: secret-sauce-dev
+spec:
+  selector:
+    matchLabels:
+      app: secret-sauce-dev
+
+  template:
+    metadata:
+      labels:
+        app: secret-sauce-dev
+    spec:
+      tolerations:
+        - key: cloud.google.com/gke-preemptible
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+      containers:
+        - name: secret-sauce-dev
+          image: gcr.io/rowan-senior-project/pytorch-dev:v0.1.0
+          stdin: true
+          tty: true
+          command:
+            - "/bin/bash"
+          resources:
+            limits:
+              nvidia.com/gpu: "4"
