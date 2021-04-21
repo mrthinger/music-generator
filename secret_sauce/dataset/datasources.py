@@ -7,7 +7,11 @@ import glob
 import numpy as np
 import torch
 import torchaudio
+from tqdm import tqdm
+import logging
 
+
+logger = logging.getLogger('datasources')
 
 class IDataSource:
     __metaclass__ = ABCMeta
@@ -25,11 +29,13 @@ class DiskDataSource(IDataSource):
     def __init__(self, cfg: SongsDatasetConfig) -> None:
         super().__init__()
         self.cfg = cfg
-        self.songs: list[str] = glob.glob(f"{cfg.disk_datasource.data_path}/*.wav")
+        self.songs: list[str] = glob.glob(f"{cfg.disk_datasource.data_path}/*")
 
         if self.cfg.disk_datasource.cache:
             self.songs_cache = torch.Tensor()
-            for song in self.songs:
+
+            logger.info('Loading songs to memory')
+            for song in tqdm(self.songs):
                 wave, _ = torchaudio.load(song)
                 self.songs_cache = torch.cat((self.songs_cache, wave), dim=-1)
 

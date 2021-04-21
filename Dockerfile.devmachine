@@ -8,7 +8,8 @@ ARG DEBIAN_FRONTEND=noninteractive
 RUN apt update -y \
     && apt install -y \
     software-properties-common \
-    git wget curl g++ libsndfile1
+    git wget curl g++ libsndfile1 \
+    htop unzip
 
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt update -y \
