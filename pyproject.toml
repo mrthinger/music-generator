@@ -12,6 +12,7 @@ python-dotenv = "^0.15.0"
 SoundFile = "^0.10.3"
 matplotlib = "^3.3.4"
 hydra-core = "^1.0.6"
+tqdm = "^4.60.0"
 
 
 [tool.poetry.dev-dependencies]
