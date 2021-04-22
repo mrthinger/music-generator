@@ -1,3 +1,4 @@
+from torch._C import dtype
 from secret_sauce.util.util import print_master
 from secret_sauce.network.vqvae.vector_quantizer import VectorQuantizer
 from secret_sauce.network.vqvae.resnet import Resnet1dBlock
@@ -38,11 +39,18 @@ class VQVAE(nn.Module):
             nn.ConvTranspose1d(64, 64, 4, 2, 1),
             nn.Conv1d(64, 1, 3, 1, 1),
         )
-        n_fft = 2048
-        win_length = None
-        hop_length = 128
-        n_mels = 512
-        self.mel_spectrogram = T.MelSpectrogram(
+        n_fft = (2048, 1024, 512)
+        win_length = (1200, 600, 240)
+        hop_length = (240, 120, 50)
+        n_mels = (128, 64, 32)
+
+        self.specs: list[T.MelSpectrogram] = []
+        for i in range(3):
+            spec = self.make_mel_spec(n_fft[i], win_length[i], hop_length[i], n_mels[i])
+
+
+    def make_mel_spec(self, n_fft, win_length, hop_length, n_mels):
+        return T.MelSpectrogram(
             sample_rate=self.cfg.dataset.sample_rate,
             n_fft=n_fft,
             win_length=win_length,
@@ -54,7 +62,6 @@ class VQVAE(nn.Module):
             n_mels=n_mels,
             normalized=True,
         )
-        # self.sequential_model = nn.Sequential(*list(self.encoder.modules()),*list(self.decoder.modules()))
 
     def make_res1d(self):
         return nn.Sequential(
@@ -66,20 +73,25 @@ class VQVAE(nn.Module):
             Resnet1dBlock(64, 64, dilation=3 * 6),
             Resnet1dBlock(64, 64, dilation=3 * 7),
             Resnet1dBlock(64, 64, dilation=3 * 8),
-            nn.BatchNorm1d(64),
+            Resnet1dBlock(64, 64, dilation=3 * 8),
+            nn.GroupNorm(4, 64),
         )
 
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):
+        
+        loss = torch.tensor(0, dtype=torch.float, device=input.device)
 
-        self.mel_spectrogram.type(torch.FloatTensor).to(input.device)
+        for spec in self.specs:
 
-        input = input.type(torch.FloatTensor).to(input.device)
-        target = target.type(torch.FloatTensor).to(target.device)
+            spec.to(input.device, dtype=torch.float)
 
-        input = self.mel_spectrogram(input)
-        target = self.mel_spectrogram(target)
+            input = input.to(input.device, dtype=torch.float)
+            target = target.to(target.device, dtype=torch.float)
 
-        loss = F.mse_loss(input, target)
+            input = spec(input)
+            target = spec(target)
+
+            loss += F.mse_loss(input, target) / len(self.specs)
         return loss
 
     def forward(self, x: torch.Tensor, encode_only: bool = False):
