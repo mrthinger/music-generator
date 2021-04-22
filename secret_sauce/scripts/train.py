@@ -80,10 +80,13 @@ def main():
             model.step()
             lr_scheduler.step()
 
+            if model.global_rank == 0 and model.global_steps % 10 == 0:
+                writer.add_scalar("step_loss/train", epoch_loss, global_step=model.global_steps)
+
         epoch_loss /= len(training_dataloader)
 
         if model.global_rank == 0:
-            writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
+            writer.add_scalar("epoch_loss/train", epoch_loss, global_step=model.global_steps)
 
             if epoch % cfg.generate_every_epochs == 0:
                 song: torch.Tensor = (
