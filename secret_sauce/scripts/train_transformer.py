@@ -1,19 +1,13 @@
 import torch
 torch.manual_seed(0)
-# torch.backends.cudnn.benchmark = True
-# torch.backends.cudnn.enabled = True
+import random
+random.seed(0)
+import numpy as np
+np.random.seed(0)
 
 
 from secret_sauce.network.basic_transformer.transformer import BasicTransformer
 from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
-
-import random
-
-random.seed(0)
-import numpy as np
-
-np.random.seed(0)
-
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE

@@ -47,10 +47,10 @@ class VQVAE(nn.Module):
             n_fft=n_fft,
             win_length=win_length,
             hop_length=hop_length,
-            center=False,
+            # center=False,
             power=2.0,
-            norm="slaney",
-            onesided=True,
+            # norm="slaney",
+            # onesided=True,
             n_mels=n_mels,
             normalized=True,
         )

@@ -48,13 +48,13 @@ class DiskDataSource(IDataSource):
             return self.songs_cache[..., frame_offset : frame_offset + num_frames]
 
         else:
-            with open(self.songs[idx], mode="rb") as song:
-                wave, sample_rate = torchaudio.load(
-                    song, frame_offset=frame_offset, num_frames=num_frames
-                )
-                assert (
-                    sample_rate == self.cfg.sample_rate
-                ), f"samplerate off!: {self.songs[idx]}"
+            # with open(self.songs[idx], mode="rb") as song:
+            wave, sample_rate = torchaudio.load(
+                self.songs[idx], offset=frame_offset, num_frames=num_frames
+            )
+            assert (
+                sample_rate == self.cfg.sample_rate
+            ), f"samplerate off!: {self.songs[idx]}"
 
             return wave
 
