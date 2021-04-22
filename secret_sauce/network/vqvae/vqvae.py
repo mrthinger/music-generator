@@ -66,8 +66,6 @@ class VQVAE(nn.Module):
             Resnet1dBlock(64, 64, dilation=3 * 6),
             Resnet1dBlock(64, 64, dilation=3 * 7),
             Resnet1dBlock(64, 64, dilation=3 * 8),
-            Resnet1dBlock(64, 64, dilation=3 * 9),
-            Resnet1dBlock(64, 64, dilation=3 * 10),
             nn.BatchNorm1d(64),
         )
 
