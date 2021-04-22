@@ -24,7 +24,10 @@ class Config:
         else datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
     )
     save_dir: str = f"outputs/{save_name}"
+    save_every_epochs = 1
 
 
     load_dir: Optional[str] = None
     load_tag: Optional[str] = None
+
+    generate_every_epochs = 1

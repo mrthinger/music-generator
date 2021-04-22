@@ -85,18 +85,18 @@ def main():
         if model.global_rank == 0:
             writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
 
-            if epoch % 1 == 0:
+            if epoch % cfg.generate_every_epochs == 0:
                 song: torch.Tensor = (
                     y[0].detach().cpu().type(torch.FloatTensor).clip(-1, 1)
                 )
                 writer.add_audio(
                     "Reconstruction",
                     song,
-                    sample_rate=22000,
+                    sample_rate=cfg.dataset.sample_rate,
                     global_step=model.global_steps,
                 )
 
-        if epoch % 1 == 0 and epoch != 0:
+        if epoch % cfg.save_every_epochs == 0 and epoch != 0:
             model.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
 
 
