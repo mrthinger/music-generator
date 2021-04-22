@@ -4,7 +4,10 @@ from secret_sauce.dataset.datasources import IDataSource
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 from torch.utils.data import Dataset
 import numpy as np
+from torchtyping import TensorType
+import logging
 
+logger = logging.getLogger(__name__)
 
 class SongsDataset(Dataset):
     def __init__(self, cfg: SongsDatasetConfig, datasource: IDataSource) -> None:
@@ -23,7 +26,19 @@ class SongsDataset(Dataset):
         song_idx, sec_offset = self.get_index_offset(item_idx)
         wave = self.datasource.get_song(song_idx, sec_offset)
         mono = self.preprocess_sample(wave)
+
+        # Retry bad sample
+        if not self.is_sample_valid(mono):
+            logger.warning(f'bad sample at index {item_idx}')
+            rand_ind = random.randint(0, self.__len__() - 1)
+            return self.__getitem__(rand_ind)
+
         return mono
+
+    def is_sample_valid(self, wave: TensorType['channels', 'time']) -> bool:
+        correct_length: bool = wave.shape[-1] == self.cfg.sample_len * self.cfg.sample_rate
+
+        return correct_length
 
     def __len__(self):
         return int(np.floor(self.cumsum[-1] / self.cfg.sample_len))
