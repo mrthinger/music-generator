@@ -1,1 +1,1 @@
-deepspeed secret_sauce/scripts/train.py --deepspeed_config=./secret_sauce/config/deepspeed_zero.json
+deepspeed secret_sauce/scripts/train.py --deepspeed_config=./secret_sauce/config/deepspeed_vqvae.json
