@@ -14,6 +14,9 @@ Poetry doesnt play nicely with cuda versions of torch
 
 ```sh
 ./setup.sh
+wget https://storage.googleapis.com/tensorbeat-public/savant-train-wdlc.zip
+unzip savant-train-wdlc.zip
+rm savant-train-wdlc.zip
 ```
 
 ```sh
