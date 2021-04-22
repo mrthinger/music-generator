@@ -30,9 +30,8 @@ class SongsDataset(Dataset):
 
     def get_index_offset(self, item) -> tuple[int, float]:
         # For a given dataset item and shift, return song index and offset within song
-        half_interval = self.cfg.sample_len // 2
-        # shift = np.random.randint(-half_interval, half_interval) if self.aug_shift else 0
-        shift = 0
+        half_interval = self.cfg.sample_len / 2
+        shift = np.random.randint(-half_interval, half_interval)
         offset = (
             item * self.cfg.sample_len + shift
         )  # Note we centred shifts, so adding now
@@ -51,7 +50,7 @@ class SongsDataset(Dataset):
             start <= midpoint <= end
         ), f"Midpoint {midpoint} not inside interval [{start}, {end}] for index {index}"
         if offset > end - self.cfg.sample_len:  # Going over song
-            offset = max(start, offset - half_interval)  # Now should fit
+            offset = max(start, offset - self.cfg.sample_len)  # Now should fit
         elif offset < start:  # Going under song
             offset = min(
                 end - self.cfg.sample_len, offset + half_interval

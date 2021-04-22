@@ -9,4 +9,4 @@ import torchaudio
 def get_duration_sec(song_path: str) -> float:
     sample_info, encoding_info = torchaudio.info(song_path)
 
-    return sample_info.length / sample_info.rate
+    return (sample_info.length // sample_info.channels) / sample_info.rate
