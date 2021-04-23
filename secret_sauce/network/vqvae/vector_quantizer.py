@@ -2,6 +2,7 @@ import deepspeed
 import torch
 from torch import nn
 from torch.nn import functional as F
+import torch.distributed as dist_fn
 
 # Source (Apache License 2.0): 
 # https://github.com/AntixK/PyTorch-VAE/blob/8700d245a9735640dda458db4cf40708caf2e77f/models/vq_vae.py#L7
@@ -14,7 +15,7 @@ class VectorQuantizer(nn.Module):
     def __init__(self,
                  num_embeddings: int,
                  embedding_dim: int,
-                 beta: float = 0.02):
+                 beta: float = 0.98):
         super(VectorQuantizer, self).__init__()
         self.K = num_embeddings
         self.D = embedding_dim
@@ -76,3 +77,52 @@ class VectorQuantizer(nn.Module):
         quantized_latents = latents + (quantized_latents - latents).detach()
 
         return quantized_latents.permute(0, 2, 1).contiguous(), vq_loss  # [B x T x D] -> [B x D x T]
+
+
+
+#https://github.com/lucidrains/vector-quantize-pytorch/blob/master/vector_quantize_pytorch/vector_quantize_pytorch.py
+def ema_inplace(moving_avg, new, decay):
+    moving_avg.data.mul_(decay).add_(new, alpha = (1 - decay))
+
+def laplace_smoothing(x, n_categories, eps=1e-5):
+    return (x + eps) / (x.sum() + n_categories * eps)
+
+class VectorQuantize(nn.Module):
+    def __init__(self, dim, n_embed, decay=0.8, commitment=1., eps=1e-5):
+        super().__init__()
+
+        self.dim = dim
+        self.n_embed = n_embed
+        self.decay = decay
+        self.eps = eps
+        self.commitment = commitment
+
+        embed = torch.randn(dim, n_embed)
+        self.register_buffer('embed', embed)
+        self.register_buffer('cluster_size', torch.zeros(n_embed))
+        self.register_buffer('embed_avg', embed.clone())
+
+    def forward(self, input):
+        dtype = input.dtype
+        flatten = input.reshape(-1, self.dim)
+        dist = (
+            flatten.pow(2).sum(1, keepdim=True)
+            - 2 * flatten @ self.embed
+            + self.embed.pow(2).sum(0, keepdim=True)
+        )
+        _, embed_ind = (-dist).max(1)
+        embed_onehot = F.one_hot(embed_ind, self.n_embed).type(dtype)
+        embed_ind = embed_ind.view(*input.shape[:-1])
+        quantize = F.embedding(embed_ind, self.embed.transpose(0, 1))
+
+        if self.training:
+            ema_inplace(self.cluster_size, embed_onehot.sum(0), self.decay)
+            embed_sum = flatten.transpose(0, 1) @ embed_onehot
+            ema_inplace(self.embed_avg, embed_sum, self.decay)
+            cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, self.eps) * self.cluster_size.sum()
+            embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
+            self.embed.data.copy_(embed_normalized)
+
+        loss = F.mse_loss(quantize.detach(), input) * self.commitment
+        quantize = input + (quantize - input).detach()
+        return quantize, embed_ind, loss

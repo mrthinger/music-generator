@@ -16,7 +16,7 @@ class Config:
     vqvae: VQVAEConfig = VQVAEConfig()
     transformer: BasicTransformerConfig = BasicTransformerConfig()
 
-    epochs: int = 100
+    epochs: int = 10000
 
     save_name: str = (
         os.getenv("SAVE_NAME")
@@ -24,10 +24,10 @@ class Config:
         else datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
     )
     save_dir: str = f"outputs/{save_name}"
-    save_every_epochs = 1
+    save_every_epochs = 100
 
 
     load_dir: Optional[str] = None
     load_tag: Optional[str] = None
 
-    generate_every_epochs = 1
+    generate_every_epochs = 10
