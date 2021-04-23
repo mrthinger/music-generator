@@ -16,7 +16,7 @@ class Config:
     vqvae: VQVAEConfig = VQVAEConfig()
     transformer: BasicTransformerConfig = BasicTransformerConfig()
 
-    epochs: int = 10000
+    epochs: int = 100
 
     save_name: str = (
         os.getenv("SAVE_NAME")
