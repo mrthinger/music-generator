@@ -42,7 +42,7 @@ class VQVAE(nn.Module):
         n_fft = (2048, 1024, 512)
         win_length = (1200, 600, 240)
         hop_length = (240, 120, 50)
-        n_mels = (128, 64, 32)
+        n_mels = (128, 128, 64)
 
         self.specs: list[T.MelSpectrogram] = []
         for i in range(3):
@@ -74,6 +74,7 @@ class VQVAE(nn.Module):
             Resnet1dBlock(64, 64, dilation=3 * 6),
             Resnet1dBlock(64, 64, dilation=3 * 7),
             Resnet1dBlock(64, 64, dilation=3 * 8),
+            nn.GroupNorm(4, 64),
         )
 
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):

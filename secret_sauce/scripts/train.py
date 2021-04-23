@@ -1,3 +1,7 @@
+from dotenv import load_dotenv
+load_dotenv()
+
+import shutil
 import torch
 torch.manual_seed(0)
 import random
@@ -11,6 +15,7 @@ from secret_sauce.network.vqvae.vqvae import VQVAE
 from secret_sauce.dataset.songs_dataset import SongsDataset
 from secret_sauce.dataset.datasources import DiskDataSource
 from secret_sauce.util.util import print_master
+from secret_sauce.util.io import upload_blob
 from secret_sauce.config.config import Config
 
 from omegaconf import OmegaConf
@@ -99,8 +104,13 @@ def main():
                     global_step=model.global_steps,
                 )
 
-        if epoch % cfg.save_every_epochs == 0 and epoch != 0:
+        if epoch % cfg.save_every_epochs == 0:
             model.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
+
+            if model.global_rank == 0:
+                filepath = f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}'
+                shutil.make_archive(filepath, 'tar', f'{cfg.save_dir}/epoch-{epoch}')
+                upload_blob('secret-sauce', f'{filepath}.tar', f'{filepath}.tar')
 
 
 if __name__ == "__main__":
