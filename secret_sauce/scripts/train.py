@@ -81,7 +81,7 @@ def main():
             lr_scheduler.step()
 
             if model.global_rank == 0 and model.global_steps % 10 == 0:
-                writer.add_scalar("step_loss/train", epoch_loss, global_step=model.global_steps)
+                writer.add_scalar("step_loss/train", loss.item(), global_step=model.global_steps)
 
         epoch_loss /= len(training_dataloader)
 

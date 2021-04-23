@@ -47,6 +47,7 @@ class VQVAE(nn.Module):
         self.specs: list[T.MelSpectrogram] = []
         for i in range(3):
             spec = self.make_mel_spec(n_fft[i], win_length[i], hop_length[i], n_mels[i])
+            self.specs.append(spec)
 
 
     def make_mel_spec(self, n_fft, win_length, hop_length, n_mels):
@@ -73,25 +74,23 @@ class VQVAE(nn.Module):
             Resnet1dBlock(64, 64, dilation=3 * 6),
             Resnet1dBlock(64, 64, dilation=3 * 7),
             Resnet1dBlock(64, 64, dilation=3 * 8),
-            Resnet1dBlock(64, 64, dilation=3 * 8),
-            nn.GroupNorm(4, 64),
         )
 
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):
         
         loss = torch.tensor(0, dtype=torch.float, device=input.device)
+        input = input.to(input.device, dtype=torch.float)
+        target = target.to(target.device, dtype=torch.float)
 
         for spec in self.specs:
 
             spec.to(input.device, dtype=torch.float)
 
-            input = input.to(input.device, dtype=torch.float)
-            target = target.to(target.device, dtype=torch.float)
 
-            input = spec(input)
-            target = spec(target)
+            spec_input = spec(input)
+            spec_target = spec(target)
 
-            loss += F.mse_loss(input, target) / len(self.specs)
+            loss += F.mse_loss(spec_input, spec_target) / len(self.specs)
         return loss
 
     def forward(self, x: torch.Tensor, encode_only: bool = False):
