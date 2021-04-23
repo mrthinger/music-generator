@@ -118,8 +118,10 @@ class VQVAE(nn.Module):
             return self.vector_quantizer.get_inds(y)
 
 
+        print_master(y.shape)
 
         y, embed_ind, vqloss  = self.vector_quantizer(y)
+        print_master(y.shape)
         print_master(vqloss)
 
         y = self.decoder(y)

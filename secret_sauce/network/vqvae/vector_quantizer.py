@@ -103,6 +103,10 @@ class VectorQuantize(nn.Module):
         self.register_buffer('embed_avg', embed.clone())
 
     def forward(self, input):
+
+        input = input.permute(0, 2, 1).contiguous()
+
+
         dtype = input.dtype
         flatten = input.reshape(-1, self.dim)
         dist = (
@@ -125,4 +129,4 @@ class VectorQuantize(nn.Module):
 
         loss = F.mse_loss(quantize.detach(), input) * self.commitment
         quantize = input + (quantize - input).detach()
-        return quantize, embed_ind, loss
+        return quantize.permute(0, 2, 1).contiguous(), embed_ind, loss
