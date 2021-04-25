@@ -45,15 +45,11 @@ class VQVAE(nn.Module):
             nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             nn.Conv1d(self.res_width, 1, 3, 1, 1),
         )
-        # n_fft = (2048, 1024, 512)
-        # win_length = (1200, 600, 240)
-        # hop_length = (240, 120, 50)
-        # n_mels = (128, 128, 64)  
-        # 
-        n_fft = (2048,)
-        win_length = (240,)
-        hop_length = (50,)
-        n_mels = (128,)
+        n_fft = (2048, 1024, 512)
+        win_length = (1200, 600, 240)
+        hop_length = (240, 120, 50)
+        n_mels = (128, 128, 64)  
+        
 
         self.specs: list[T.MelSpectrogram] = []
         for i in range(len(n_fft)):
@@ -91,20 +87,17 @@ class VQVAE(nn.Module):
 
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):
         
-        # loss = torch.tensor(0, dtype=torch.float, device=input.device)
+        loss = torch.tensor(0, dtype=torch.float, device=input.device)
         input = input.to(input.device, dtype=torch.float)
         target = target.to(target.device, dtype=torch.float)
 
-        spec = self.specs[0]
-        # for spec in self.specs:
+        for spec in self.specs:
 
-        spec.to(input.device, dtype=torch.float)
+            spec.to(input.device, dtype=torch.float)
+            spec_input = spec(input)
+            spec_target = spec(target)
+            loss += F.mse_loss(spec_input, spec_target) / len(self.specs)
 
-
-        spec_input = spec(input)
-        spec_target = spec(target)
-
-        loss = F.mse_loss(spec_input, spec_target) / len(self.specs)
         return loss
 
     def forward(self, x: torch.Tensor, encode_only: bool = False):
