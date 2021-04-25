@@ -14,7 +14,7 @@ from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
 from secret_sauce.dataset.songs_dataset import SongsDataset
 from secret_sauce.dataset.datasources import DiskDataSource
-from secret_sauce.util.util import print_master
+from secret_sauce.util.util import is_master, print_master
 from secret_sauce.util.io import upload_blob
 from secret_sauce.config.config import Config
 
@@ -43,6 +43,14 @@ def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
+
+
+    # if is_master():
+    #     import debugpy
+    #     debugpy.listen(5763)
+    #     print('waiting')
+    #     debugpy.wait_for_client()
+
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
@@ -74,24 +82,29 @@ def main():
     for epoch in range(cfg.epochs):
 
         epoch_loss = 0
+        epoch_codebook_usage = 0
 
         for step, batch in enumerate(training_dataloader):
             if model.fp16_enabled:
                 batch = batch.type(torch.HalfTensor)
             batch: torch.Tensor = batch.to(model.local_rank)
-            y, loss = model(batch)
+            y, loss, codebook_usage = model(batch)
             epoch_loss += loss.item()
+            epoch_codebook_usage += codebook_usage.item()
             model.backward(loss)
             model.step()
             lr_scheduler.step()
 
             if model.global_rank == 0 and model.global_steps % 10 == 0:
                 writer.add_scalar("step_loss/train", loss.item(), global_step=model.global_steps)
+                writer.add_scalar("step_codebook_usage/train", codebook_usage.item(), global_step=model.global_steps)
 
         epoch_loss /= len(training_dataloader)
+        epoch_codebook_usage /= len(training_dataloader)
 
         if model.global_rank == 0:
             writer.add_scalar("epoch_loss/train", epoch_loss, global_step=model.global_steps)
+            writer.add_scalar("epoch_codebook_usage/train", epoch_codebook_usage, global_step=model.global_steps)
 
             if epoch % cfg.generate_every_epochs == 0:
                 song: torch.Tensor = (

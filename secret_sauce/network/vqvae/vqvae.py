@@ -1,4 +1,3 @@
-from torch._C import dtype
 from secret_sauce.util.util import print_master
 from secret_sauce.network.vqvae.vector_quantizer import VectorQuantize, VectorQuantizer
 from secret_sauce.network.vqvae.resnet import Resnet1dBlock
@@ -114,15 +113,13 @@ class VQVAE(nn.Module):
         y = self.encoder(y)
 
         
+
+
+
+        y, embed_ind, vqloss, usage_perplexity  = self.vector_quantizer(y)
+
         if encode_only:
-            return self.vector_quantizer.get_inds(y)
-
-
-        print_master(y.shape)
-
-        y, embed_ind, vqloss  = self.vector_quantizer(y)
-        print_master(y.shape)
-        print_master(vqloss)
+            return embed_ind
 
         y = self.decoder(y)
 
@@ -134,7 +131,7 @@ class VQVAE(nn.Module):
         loss += spec_loss
         loss += vqloss * .1
 
-        return y, vqloss
+        return y, vqloss, usage_perplexity
 
     def encode(self, x: torch.Tensor):
         y = x

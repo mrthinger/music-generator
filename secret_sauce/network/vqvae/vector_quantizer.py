@@ -84,11 +84,11 @@ class VectorQuantizer(nn.Module):
 def ema_inplace(moving_avg, new, decay):
     moving_avg.data.mul_(decay).add_(new, alpha = (1 - decay))
 
-def laplace_smoothing(x, n_categories, eps=1e-5):
+def laplace_smoothing(x, n_categories, eps=1e-3):
     return (x + eps) / (x.sum() + n_categories * eps)
 
 class VectorQuantize(nn.Module):
-    def __init__(self, dim, n_embed, decay=0.8, commitment=1., eps=1e-5):
+    def __init__(self, dim, n_embed, decay=0.8, commitment=1., eps=1e-3):
         super().__init__()
 
         self.dim = dim
@@ -98,6 +98,7 @@ class VectorQuantize(nn.Module):
         self.commitment = commitment
 
         embed = torch.randn(dim, n_embed)
+        embed.uniform_(-1 / self.n_embed, 1 / self.n_embed)
         self.register_buffer('embed', embed)
         self.register_buffer('cluster_size', torch.zeros(n_embed))
         self.register_buffer('embed_avg', embed.clone())
@@ -123,10 +124,17 @@ class VectorQuantize(nn.Module):
             ema_inplace(self.cluster_size, embed_onehot.sum(0), self.decay)
             embed_sum = flatten.transpose(0, 1) @ embed_onehot
             ema_inplace(self.embed_avg, embed_sum, self.decay)
-            cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, self.eps) * self.cluster_size.sum()
+            cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, 1) * self.cluster_size.sum()
+
+
             embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
             self.embed.data.copy_(embed_normalized)
 
         loss = F.mse_loss(quantize.detach(), input) * self.commitment
         quantize = input + (quantize - input).detach()
-        return quantize.permute(0, 2, 1).contiguous(), embed_ind, loss
+
+        avg_probs = torch.mean(embed_onehot, dim=0)
+        perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-5)))
+
+
+        return quantize.permute(0, 2, 1).contiguous(), embed_ind, loss, perplexity
