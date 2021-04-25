@@ -19,47 +19,50 @@ class VQVAE(nn.Module):
         self.encoder = nn.Sequential(
             nn.Conv1d(1, self.res_width, 4, 2, 1),
             self.make_res1d(),
-
             # nn.Conv1d(self.res_width, self.res_width, 4, 2, 1),
             # self.make_res1d(),
             nn.Conv1d(self.res_width, self.res_width, 4, 2, 1),
             self.make_res1d(),
-
             nn.Conv1d(self.res_width, self.res_width, 4, 2, 1),
             self.make_res1d(),
-
         )
 
-        self.vector_quantizer = VectorQuantize( self.cfg.vqvae.embedding_dim, self.cfg.vqvae.num_embeddings)
+        self.vector_quantizer = VectorQuantize(
+            self.cfg.vqvae.embedding_dim,
+            self.cfg.vqvae.num_embeddings,
+            decay=self.cfg.vqvae.VQ_decay,
+            commitment=self.cfg.vqvae.VQ_commit_loss_beta,
+        )
 
         self.decoder = nn.Sequential(
             self.make_res1d(),
             nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             self.make_res1d(),
-
             # nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             # self.make_res1d(),
             nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             self.make_res1d(),
-
             nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             nn.Conv1d(self.res_width, 1, 3, 1, 1),
         )
         n_fft = (2048, 1024, 512)
         win_length = (1200, 600, 240)
         hop_length = (240, 120, 50)
-        n_mels = (128, 128, 64)  
-        
+        n_mels = (128, 128, 64)
+
+        # n_fft = (2048)
+        # win_length = (1200, 600, 240)
+        # hop_length = (32)
+        # n_mels = (128, 128, 64)
 
         self.specs: list[T.MelSpectrogram] = []
         for i in range(len(n_fft)):
             spec = self.make_mel_spec(n_fft[i], win_length[i], hop_length[i], n_mels[i])
             self.specs.append(spec)
 
-
     def make_mel_spec(self, n_fft, win_length, hop_length, n_mels):
-        return T.Spectrogram(
-            # sample_rate=self.cfg.dataset.sample_rate,
+        return T.MelSpectrogram(
+            sample_rate=self.cfg.dataset.sample_rate,
             n_fft=n_fft,
             win_length=win_length,
             hop_length=hop_length,
@@ -67,7 +70,7 @@ class VQVAE(nn.Module):
             power=2.0,
             # norm="slaney",
             # onesided=True,
-            # n_mels=n_mels,
+            n_mels=n_mels,
             normalized=True,
         )
 
@@ -86,7 +89,7 @@ class VQVAE(nn.Module):
         )
 
     def spec_loss(self, input: torch.Tensor, target: torch.Tensor):
-        
+
         loss = torch.tensor(0, dtype=torch.float, device=input.device)
         input = input.to(input.device, dtype=torch.float)
         target = target.to(target.device, dtype=torch.float)
@@ -105,17 +108,12 @@ class VQVAE(nn.Module):
 
         y = self.encoder(y)
 
-        
-
-
-
-        y, embed_ind, vqloss, usage_perplexity  = self.vector_quantizer(y)
+        y, embed_ind, vqloss, usage_perplexity = self.vector_quantizer(y)
 
         if encode_only:
             return embed_ind
 
         y = self.decoder(y)
-
 
         spec_loss = self.spec_loss(y, x)
         # print(spec_loss)

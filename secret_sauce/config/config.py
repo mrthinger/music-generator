@@ -24,7 +24,7 @@ class Config:
         else datetime.now().strftime("%m-%d-%Y-%H-%M-%S")
     )
     save_dir: str = f"outputs/{save_name}"
-    save_every_epochs = 100
+    save_every_epochs = 100000
 
 
     load_dir: Optional[str] = None

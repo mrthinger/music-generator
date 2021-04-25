@@ -2,7 +2,7 @@ import deepspeed
 import torch
 from torch import nn
 from torch.nn import functional as F
-import torch.distributed as dist_fn
+import torch.distributed as dist
 
 # Source (Apache License 2.0): 
 # https://github.com/AntixK/PyTorch-VAE/blob/8700d245a9735640dda458db4cf40708caf2e77f/models/vq_vae.py#L7
@@ -88,7 +88,7 @@ def laplace_smoothing(x, n_categories, eps=1e-3):
     return (x + eps) / (x.sum() + n_categories * eps)
 
 class VectorQuantize(nn.Module):
-    def __init__(self, dim, n_embed, decay=0.8, commitment=1., eps=1e-3):
+    def __init__(self, dim, n_embed, decay=0.8, commitment=.02, eps=1e-3):
         super().__init__()
 
         self.dim = dim
@@ -110,31 +110,52 @@ class VectorQuantize(nn.Module):
 
         dtype = input.dtype
         flatten = input.reshape(-1, self.dim)
-        dist = (
+        distance = (
             flatten.pow(2).sum(1, keepdim=True)
             - 2 * flatten @ self.embed
             + self.embed.pow(2).sum(0, keepdim=True)
         )
-        _, embed_ind = (-dist).max(1)
+        _, embed_ind = (-distance).max(1)
         embed_onehot = F.one_hot(embed_ind, self.n_embed).type(dtype)
         embed_ind = embed_ind.view(*input.shape[:-1])
         quantize = F.embedding(embed_ind, self.embed.transpose(0, 1))
 
         if self.training:
+
+            if dist.is_initialized():
+                size = float(dist.get_world_size())
+
             ema_inplace(self.cluster_size, embed_onehot.sum(0), self.decay)
+
+            if dist.is_initialized():
+                dist.all_reduce(self.cluster_size.data)
+                self.cluster_size.data /= size
+
             embed_sum = flatten.transpose(0, 1) @ embed_onehot
             ema_inplace(self.embed_avg, embed_sum, self.decay)
+
+            if dist.is_initialized():
+                dist.all_reduce(self.embed_avg.data)
+                self.embed_avg.data /= size
+
             cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, 1) * self.cluster_size.sum()
 
 
             embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
             self.embed.data.copy_(embed_normalized)
 
+            if dist.is_initialized():
+                dist.all_reduce(self.embed.data)
+                self.embed.data /= size
+
+
+
+
         loss = F.mse_loss(quantize.detach(), input) * self.commitment
         quantize = input + (quantize - input).detach()
 
         avg_probs = torch.mean(embed_onehot, dim=0)
         perplexity = torch.exp(-torch.sum(avg_probs * torch.log(avg_probs + 1e-5)))
-
+        perplexity = embed_ind.unique().shape[-1]
 
         return quantize.permute(0, 2, 1).contiguous(), embed_ind, loss, perplexity

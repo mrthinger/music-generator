@@ -83,24 +83,29 @@ def main():
 
         epoch_loss = 0
         epoch_codebook_usage = 0
+        num_batches = 0
 
         for step, batch in enumerate(training_dataloader):
             if model.fp16_enabled:
                 batch = batch.type(torch.HalfTensor)
             batch: torch.Tensor = batch.to(model.local_rank)
             y, loss, codebook_usage = model(batch)
+
+            #stats
             epoch_loss += loss.item()
-            epoch_codebook_usage += codebook_usage.item()
+            epoch_codebook_usage += codebook_usage
+            num_batches +=1
+
             model.backward(loss)
             model.step()
             lr_scheduler.step()
 
             if model.global_rank == 0 and model.global_steps % 10 == 0:
                 writer.add_scalar("step_loss/train", loss.item(), global_step=model.global_steps)
-                writer.add_scalar("step_codebook_usage/train", codebook_usage.item(), global_step=model.global_steps)
+                writer.add_scalar("step_codebook_usage/train", codebook_usage, global_step=model.global_steps)
 
-        epoch_loss /= len(training_dataloader)
-        epoch_codebook_usage /= len(training_dataloader)
+        epoch_loss /= num_batches
+        epoch_codebook_usage /= num_batches
 
         if model.global_rank == 0:
             writer.add_scalar("epoch_loss/train", epoch_loss, global_step=model.global_steps)
