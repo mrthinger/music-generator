@@ -45,11 +45,11 @@ def main():
     deepspeed.init_distributed()
 
 
-    if is_master():
-        import debugpy
-        debugpy.listen(5763)
-        print('waiting')
-        debugpy.wait_for_client()
+    # if is_master():
+    #     import debugpy
+    #     debugpy.listen(5763)
+    #     print('waiting')
+    #     debugpy.wait_for_client()
 
 
     print_master(args)
