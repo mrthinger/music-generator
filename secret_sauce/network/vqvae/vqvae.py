@@ -129,9 +129,9 @@ class VQVAE(nn.Module):
 
         loss = F.mse_loss(y, x)
         loss += spec_loss
-        loss += vqloss * .1
+        loss += vqloss
 
-        return y, vqloss, usage_perplexity
+        return y, loss, usage_perplexity
 
     def encode(self, x: torch.Tensor):
         y = x
