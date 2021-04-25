@@ -48,7 +48,7 @@ class VQVAE(nn.Module):
         n_fft = (2048, 2048, 1024, 512)
         win_length = (128, 1200, 600, 240)
         hop_length = (128, 240, 120, 50)
-        n_mels = (512, 256, 128, 128)
+        n_mels = (256, 256, 128, 64)
 
         self.specs: list[T.MelSpectrogram] = []
         for i in range(len(n_fft)):
@@ -114,6 +114,11 @@ class VQVAE(nn.Module):
         # print(spec_loss)
 
         loss = F.mse_loss(y, x)
+
+        print_master(f'rec: {loss}')
+        print_master(f'spec: {spec_loss}')
+        print_master(f'vq: {vqloss}')
+
         loss += spec_loss
         loss += vqloss
 

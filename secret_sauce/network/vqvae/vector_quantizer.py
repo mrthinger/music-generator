@@ -100,7 +100,7 @@ class VectorQuantize(nn.Module):
         embed = torch.randn(dim, n_embed)
         embed.uniform_(-1 / self.n_embed, 1 / self.n_embed)
         self.register_buffer('embed', embed)
-        self.register_buffer('cluster_size', torch.zeros(n_embed))
+        self.register_buffer('cluster_size', torch.zeros(n_embed, dtype=torch.float32))
         self.register_buffer('embed_avg', embed.clone())
 
     def forward(self, input):
@@ -138,7 +138,9 @@ class VectorQuantize(nn.Module):
                 dist.all_reduce(self.embed_avg.data)
                 self.embed_avg.data /= size
 
-            cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, 1) * self.cluster_size.sum()
+            cluster_size = laplace_smoothing(self.cluster_size, self.n_embed, self.eps)
+
+            cluster_size *= self.cluster_size.type_as(cluster_size).sum()
 
 
             embed_normalized = self.embed_avg / cluster_size.unsqueeze(0)
