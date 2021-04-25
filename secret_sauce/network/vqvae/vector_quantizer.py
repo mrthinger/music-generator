@@ -125,18 +125,21 @@ class VectorQuantize(nn.Module):
             if dist.is_initialized():
                 size = float(dist.get_world_size())
 
-            ema_inplace(self.cluster_size, embed_onehot.sum(0), self.decay)
+
+            embed_onehot_sum = embed_onehot.type(torch.float32).sum(0)
+
+            ema_inplace(self.cluster_size, embed_onehot_sum, self.decay)
 
             if dist.is_initialized():
-                dist.all_reduce(self.cluster_size.data)
                 self.cluster_size.data /= size
+                dist.all_reduce(self.cluster_size.data)
 
-            embed_sum = flatten.transpose(0, 1) @ embed_onehot
+            embed_sum = flatten.transpose(0, 1).type(torch.float32) @ embed_onehot.type(torch.float32)
             ema_inplace(self.embed_avg, embed_sum, self.decay)
 
             if dist.is_initialized():
-                dist.all_reduce(self.embed_avg.data)
                 self.embed_avg.data /= size
+                dist.all_reduce(self.embed_avg.data)
 
             cs_f32 = self.cluster_size.type(torch.float32)
 
@@ -146,8 +149,8 @@ class VectorQuantize(nn.Module):
             self.embed.data.copy_(embed_normalized)
 
             if dist.is_initialized():
-                dist.all_reduce(self.embed.data)
                 self.embed.data /= size
+                dist.all_reduce(self.embed.data)
 
 
 

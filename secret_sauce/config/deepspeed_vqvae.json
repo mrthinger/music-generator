@@ -1,5 +1,5 @@
 {
-  "train_batch_size": 32,
+  "train_batch_size": 64,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "AdamW",
@@ -27,8 +27,8 @@
     "stage3_max_reuse_distance": 1e9,
     "stage3_prefetch_bucket_size": 1e7,
     "stage3_param_persistence_threshold": 1e5,
-    "reduce_bucket_size": 1e7,
-    "sub_group_size": 1e7
+    "reduce_bucket_size": 1e6,
+    "sub_group_size": 1e6
   },
   "offload_optimizer": {
     "device": "none"
