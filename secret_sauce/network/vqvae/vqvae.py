@@ -45,15 +45,10 @@ class VQVAE(nn.Module):
             nn.ConvTranspose1d(self.res_width, self.res_width, 4, 2, 1),
             nn.Conv1d(self.res_width, 1, 3, 1, 1),
         )
-        n_fft = (2048, 1024, 512)
-        win_length = (1200, 600, 240)
-        hop_length = (240, 120, 50)
-        n_mels = (128, 128, 64)
-
-        # n_fft = (2048)
-        # win_length = (1200, 600, 240)
-        # hop_length = (32)
-        # n_mels = (128, 128, 64)
+        n_fft = (2048, 2048, 1024, 512)
+        win_length = (128, 1200, 600, 240)
+        hop_length = (128, 240, 120, 50)
+        n_mels = (512, 256, 128, 128)
 
         self.specs: list[T.MelSpectrogram] = []
         for i in range(len(n_fft)):
