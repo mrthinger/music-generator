@@ -38,18 +38,17 @@ def main():
 
     ds = BasicCompressedDataset(cfg)
 
-    model = BasicTransformer(cfg)
-
-    model = PerformerLM(
-        num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
-        max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
-        dim=cfg.transformer.width,
-        depth=cfg.transformer.blocks_num,
-        heads=cfg.transformer.heads_num,
-        causal=True,
-        use_scalenorm = True,
-    )
-    model = AutoregressiveWrapper(model)
+    with deepspeed.zero.Init():
+        model = PerformerLM(
+            num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
+            max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
+            dim=cfg.transformer.width,
+            depth=cfg.transformer.blocks_num,
+            heads=cfg.transformer.heads_num,
+            causal=True,
+            use_scalenorm = True,
+        )
+        model = AutoregressiveWrapper(model)
 
 
     model_engine, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
