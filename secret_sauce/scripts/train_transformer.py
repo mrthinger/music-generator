@@ -11,7 +11,7 @@ from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
-from secret_sauce.dataset.songs_dataset import SongsDataset
+from secret_sauce.dataset.songs_dataset import SongClipDataset
 from secret_sauce.dataset.datasources import DiskDataSource
 from secret_sauce.util.util import print_master
 from secret_sauce.config.config import Config

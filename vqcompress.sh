@@ -1,1 +1,1 @@
-deepspeed secret_sauce/scripts/vqcompress.py --deepspeed_config=./secret_sauce/config/deepspeed.json
+deepspeed secret_sauce/scripts/vqcompress.py --deepspeed_config=./secret_sauce/config/deepspeed_vqvae.json

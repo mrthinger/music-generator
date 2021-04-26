@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-class SongsDataset(Dataset):
+class SongClipDataset(Dataset):
     def __init__(self, cfg: SongsDatasetConfig, datasource: IDataSource) -> None:
         super().__init__()
         self.datasource = datasource

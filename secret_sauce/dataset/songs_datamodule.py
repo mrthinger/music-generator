@@ -1,5 +1,5 @@
 from torch.utils.data.dataloader import DataLoader
-from secret_sauce.dataset.songs_dataset import SongsDataset
+from secret_sauce.dataset.songs_dataset import SongClipDataset
 from secret_sauce.config.data.dataset import SongsDatasetConfig
 from torch.utils.data import Dataset
 
@@ -19,7 +19,7 @@ class OffsetDataset(Dataset):
 
 
 class SongsDataModule:
-    def __init__(self, cfg: SongsDatasetConfig, dataset: SongsDataset):
+    def __init__(self, cfg: SongsDatasetConfig, dataset: SongClipDataset):
         super().__init__()
         self.cfg = cfg
 

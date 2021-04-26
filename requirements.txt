@@ -5,3 +5,4 @@ tensorboard==2.4.1
 torch_tb_profiler==0.1.0
 torchtyping==0.1.1
 performer-pytorch==1.0.11
+debugpy

@@ -8,9 +8,9 @@ np.random.seed(0)
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
-from secret_sauce.dataset.songs_dataset import SongsDataset
+from secret_sauce.dataset.songs_dataset import SongClipDataset
 from secret_sauce.dataset.datasources import DiskDataSource
-from secret_sauce.util.util import print_master
+from secret_sauce.util.util import is_master, print_master, wait_for_debugger_on_master
 from secret_sauce.config.config import Config
 import torch.distributed as dist
 from torch.utils.data import DataLoader
@@ -41,8 +41,8 @@ def main():
 
 
     #configure params
-    cfg.load_dir = './outputs/04-16-2021-10-58-09'
-    cfg.load_tag = 'epoch-900'
+    cfg.load_dir = './weights/04'
+    cfg.load_tag = 'epoch-29'
 
     deepspeed.init_distributed()
 
@@ -51,7 +51,7 @@ def main():
 
     disk = DiskDataSource(cfg.dataset)
 
-    ds = SongsDataset(cfg.dataset, disk)
+    ds = SongClipDataset(cfg.dataset, disk)
 
     vqvae = VQVAE(cfg)
 
@@ -62,6 +62,7 @@ def main():
         args=args, model=vqvae, model_parameters=vqvae.parameters(), training_data=ds
     )
 
+
     model: DeepSpeedEngine = model
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
@@ -69,7 +70,7 @@ def main():
         model.load_checkpoint(cfg.load_dir, tag=cfg.load_tag, load_optimizer_states=False, load_lr_scheduler_states=False)
 
 
-    if dist.get_rank() == 0:
+    if is_master():
         data = []
 
     for step, batch in enumerate(training_dataloader):
@@ -78,27 +79,30 @@ def main():
         batch: torch.Tensor = batch.to(model.local_rank)
 
 
-        tensor_list = [torch.zeros((1, 1, 8250), dtype=torch.float32).to(model.local_rank) for _ in range(model.world_size)]
+        tensor_list = [torch.zeros((16,20000), dtype=torch.float32).to(model.local_rank) for _ in range(model.world_size)]
 
+        with torch.no_grad():
         
-        
-        y: torch.Tensor = model(batch, encode_only=True)
-        y = y.detach().type(torch.float32)
+            y: torch.Tensor = model(batch, encode_only=True)
+            y = y.detach().type(torch.float32)
+
         print_master((y.shape, tensor_list[0].shape, len(tensor_list)))
 
         dist.all_gather(tensor_list, y)
 
-        if dist.get_rank() == 0:
+        if is_master():
             data.append(tensor_list)
     
 
 
-    if dist.get_rank() == 0:
+    if is_master():
+        wait_for_debugger_on_master()
+
         import itertools
         data = list(itertools.chain(*data))
         data = torch.stack(data).view(-1).type(torch.int16)
         print(data)
-        torch.save(data, "./nggyu22000-compressed.pt")
+        torch.save(data, "./savant32000-compressed.pt")
 
 
 

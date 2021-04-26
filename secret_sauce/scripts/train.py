@@ -12,9 +12,9 @@ np.random.seed(0)
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.network.vqvae.vqvae import VQVAE
-from secret_sauce.dataset.songs_dataset import SongsDataset
+from secret_sauce.dataset.songs_dataset import SongClipDataset
 from secret_sauce.dataset.datasources import DiskDataSource
-from secret_sauce.util.util import is_master, print_master
+from secret_sauce.util.util import is_master, parse_args, print_master
 from secret_sauce.util.io import upload_blob
 from secret_sauce.config.config import Config
 
@@ -23,20 +23,6 @@ import deepspeed
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="VAE Train")
-
-    # Include DeepSpeed configuration arguments
-    parser = deepspeed.add_config_arguments(parser)
-    parser.add_argument(
-        "--local_rank",
-        type=int,
-        default=-1,
-        help="local rank passed from distributed launcher",
-    )
-
-    args = parser.parse_args()
-    return args
 
 
 def main():
@@ -45,19 +31,13 @@ def main():
     deepspeed.init_distributed()
 
 
-    # if is_master():
-    #     import debugpy
-    #     debugpy.listen(5763)
-    #     print('waiting')
-    #     debugpy.wait_for_client()
-
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
 
     disk = DiskDataSource(cfg.dataset)
 
-    ds = SongsDataset(cfg.dataset, disk)
+    ds = SongClipDataset(cfg.dataset, disk)
 
     vqvae = VQVAE(cfg)
 
