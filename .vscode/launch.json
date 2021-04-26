@@ -8,7 +8,8 @@
       "name": "Python: Attach using Process Id",
       "type": "python",
       "request": "attach",
-      "port": 5763 
+      "port": 5763,
+      "justMyCode": false
     },
     {
       "name": "Python: Current File",

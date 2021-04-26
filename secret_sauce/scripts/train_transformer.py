@@ -1,8 +1,11 @@
 import torch
+
 torch.manual_seed(0)
 import random
+
 random.seed(0)
 import numpy as np
+
 np.random.seed(0)
 
 
@@ -10,7 +13,7 @@ from secret_sauce.network.basic_transformer.transformer import BasicTransformer
 from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
-from secret_sauce.util.util import is_master, parse_args, print_master
+from secret_sauce.util.util import is_master, parse_args, print_master, wait_for_debugger_on_master
 from secret_sauce.config.config import Config
 
 from omegaconf import OmegaConf
@@ -26,6 +29,7 @@ def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
+    wait_for_debugger_on_master()
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
@@ -35,12 +39,13 @@ def main():
     model = BasicTransformer(cfg)
 
     model = PerformerLM(
-        num_tokens=cfg.vqvae.num_embeddings,
-        max_seq_len=2324592,
+        num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
+        max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
         dim=cfg.transformer.width,
         depth=cfg.transformer.blocks_num,
         heads=cfg.transformer.heads_num,
-        causal=True
+        causal=True,
+        use_scalenorm = True,
     )
     model = AutoregressiveWrapper(model)
 
@@ -63,9 +68,7 @@ def main():
     if is_master():
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))
-        writer.add_scalar(
-            "Parameters", sum(p.numel() for p in model.parameters())
-        )
+        writer.add_scalar("Parameters", sum(p.numel() for p in model.parameters()))
 
     for epoch in range(cfg.epochs):
 
@@ -76,10 +79,10 @@ def main():
             model_engine.train()
             batch: torch.Tensor = batch.to(model_engine.local_rank, dtype=torch.long)
 
-            loss = model_engine(batch) 
+            loss = model_engine(batch)
 
             epoch_loss += loss.item()
-            num_batches += 1 
+            num_batches += 1
             model_engine.backward(loss)
             model_engine.step()
             lr_scheduler.step()
@@ -87,7 +90,9 @@ def main():
         epoch_loss /= num_batches
 
         if is_master:
-            writer.add_scalar("loss/train", epoch_loss, global_step=model_engine.global_steps)
+            writer.add_scalar(
+                "loss/train", epoch_loss, global_step=model_engine.global_steps
+            )
 
         if epoch % cfg.save_every_epochs == 0:
             model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
