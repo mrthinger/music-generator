@@ -20,3 +20,9 @@ Poetry doesnt play nicely with cuda versions of torch
 git config --global user.name "Evan Pierce"
 git config --global user.email "mrthinger@gmail.com"
 ```
+
+
+# TODO
+
+- Add apex setup
+- Add compressed data setup
