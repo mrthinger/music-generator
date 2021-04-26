@@ -1,5 +1,5 @@
 {
-  "train_batch_size":512,
+  "train_batch_size":8,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "AdamW",
@@ -29,7 +29,7 @@
   },
 
   "flops_profiler": {
-    "enabled": true,
+    "enabled": false,
     "profile_step": 5,
     "module_depth": 1,
     "top_modules": 5,

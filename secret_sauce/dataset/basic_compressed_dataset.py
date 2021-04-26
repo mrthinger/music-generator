@@ -20,16 +20,13 @@ class BasicCompressedDataset(Dataset):
 
     def __getitem__(self, item_idx: int):
         song_idx, offset = self.get_index_offset(item_idx)
-
-
-
         start = offset
         end = offset + self.sample_size
 
-        clip = self.data[start : end]
-        x = clip[: -self.shift]
-        y = clip[self.shift :]
-        x_pos = torch.arange(start, self.cfg.transformer.window_size)
+        clip = self.data[song_idx][start : end]
+        x = clip[: -self.cfg.transformer.shift]
+        y = clip[self.cfg.transformer.shift :]
+        x_pos = torch.arange(start, start+self.cfg.transformer.window_size)
         return torch.stack((x, x_pos, y))
 
     def __len__(self):

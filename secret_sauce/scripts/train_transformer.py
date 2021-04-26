@@ -10,10 +10,7 @@ from secret_sauce.network.basic_transformer.transformer import BasicTransformer
 from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
-from secret_sauce.network.vqvae.vqvae import VQVAE
-from secret_sauce.dataset.songs_dataset import SongClipDataset
-from secret_sauce.dataset.datasources import DiskDataSource
-from secret_sauce.util.util import print_master
+from secret_sauce.util.util import parse_args, print_master
 from secret_sauce.config.config import Config
 
 from omegaconf import OmegaConf
@@ -23,36 +20,15 @@ from torch.utils.tensorboard import SummaryWriter
 from torch import nn
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="VAE Train")
-
-    # Include DeepSpeed configuration arguments
-    parser = deepspeed.add_config_arguments(parser)
-    parser.add_argument(
-        "--local_rank",
-        type=int,
-        default=-1,
-        help="local rank passed from distributed launcher",
-    )
-
-    args = parser.parse_args()
-    return args
-
-
 def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
-    deepspeed.checkpointing.configure(None,
-        deepspeed_config=args.deepspeed_config
-    )
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
 
-    ds = BasicCompressedDataset(
-        "/root/secret_sauce/nggyu22000-compressed.pt", window_size=256
-    )
+    ds = BasicCompressedDataset(cfg)
 
     transformer = BasicTransformer(cfg)
 

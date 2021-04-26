@@ -38,7 +38,7 @@ class BasicTransformer(nn.Module):
         super(BasicTransformer, self).__init__()
         self.cfg = cfg
         self.model_type = "Transformer"
-        self.pos_encoder = PositionalEncoding(cfg.transformer.width, max_len=600000)
+        self.pos_encoder = PositionalEncoding(cfg.transformer.width, max_len=2324593)
         self.encoder_blocks = nn.ModuleList([
             nn.TransformerEncoderLayer(
                 cfg.transformer.width,
@@ -72,8 +72,8 @@ class BasicTransformer(nn.Module):
         target: TensorType["batch", "timestep"],
     ):
 
-        device = src.device
         src: torch.Tensor = src
+        device = src.device
         B, T = src.shape
 
         src = self.codebook(src) * math.sqrt(self.cfg.transformer.width)
