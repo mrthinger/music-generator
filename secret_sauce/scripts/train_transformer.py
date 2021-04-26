@@ -29,7 +29,9 @@ def main():
     cfg = Config()
     args = parse_args()
     deepspeed.init_distributed()
-    wait_for_debugger_on_master()
+    torch.set_autocast_enabled(True)
+
+    # wait_for_debugger_on_master()
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
