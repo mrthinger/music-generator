@@ -40,19 +40,27 @@ def main():
 
     ds = BasicCompressedDataset(cfg)
 
-    with deepspeed.zero.Init(mem_efficient_linear=True):
-        model = PerformerLM(
-            num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
-            max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
-            dim=cfg.transformer.width,
-            depth=cfg.transformer.blocks_num,
-            heads=cfg.transformer.heads_num,
-            causal=True,
-            use_scalenorm = True,
-            reversible= True,
-            emb_dropout=cfg.transformer.dropout,
-        )
-        model = AutoregressiveWrapper(model)
+    # with deepspeed.zero.Init(mem_efficient_linear=True):
+    model = PerformerLM(
+        num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
+        max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
+        dim=cfg.transformer.width,
+        depth=cfg.transformer.blocks_num,
+        heads=cfg.transformer.heads_num,
+        causal=True,
+        use_scalenorm = True,
+        reversible= True,
+        emb_dropout=cfg.transformer.dropout,
+    )
+    model = AutoregressiveWrapper(model)
+
+    print_master(f"num ds elems: {len(ds)}")
+    print_master(f"num params: {sum(p.numel() for p in model.parameters())}")
+
+    if is_master():
+        writer = SummaryWriter(cfg.save_dir)
+        writer.add_scalar("Dataset Elements", len(ds))
+        writer.add_scalar("Parameters", sum(p.numel() for p in model.parameters()))
 
 
     model_engine, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
@@ -68,14 +76,6 @@ def main():
     if cfg.load_dir != None and cfg.load_tag != None:
         model_engine.load_checkpoint(cfg.load_dir, tag=cfg.load_tag)
 
-    if is_master():
-        writer = SummaryWriter(cfg.save_dir)
-        writer.add_scalar("Dataset Elements", len(ds))
-        writer.add_scalar("Parameters", sum(p.numel() for p in model_engine.parameters()))
-
-        print_master(f"num ds elems: {len(ds)}")
-        print_master(f"num params: {sum(p.numel() for p in model_engine.parameters())}")
-
 
     for epoch in range(cfg.epochs):
 
@@ -87,7 +87,6 @@ def main():
             batch: torch.Tensor = batch.to(model_engine.local_rank, dtype=torch.long)
 
             loss = model_engine(batch)
-            print_master(loss.item())
 
             epoch_loss += loss.item()
             num_batches += 1
