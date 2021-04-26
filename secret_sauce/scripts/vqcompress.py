@@ -29,7 +29,7 @@ def main():
     ds = SongDataset(disk)
     songs_dataloader = DataLoader(ds)
 
-    wait_for_debugger()
+    # wait_for_debugger()
 
     vqvae = VQVAE(cfg)
 
