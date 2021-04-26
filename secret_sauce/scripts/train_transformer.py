@@ -51,8 +51,6 @@ def main():
     )
     model = AutoregressiveWrapper(model)
 
-    print_master(f"num ds elems: {len(ds)}")
-    print_master(f"num params: {sum(p.numel() for p in model.parameters())}")
 
     model_engine, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
         args=args,
@@ -71,6 +69,10 @@ def main():
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))
         writer.add_scalar("Parameters", sum(p.numel() for p in model.parameters()))
+
+        print_master(f"num ds elems: {len(ds)}")
+        print_master(f"num params: {sum(p.numel() for p in model.parameters())}")
+
 
     for epoch in range(cfg.epochs):
 

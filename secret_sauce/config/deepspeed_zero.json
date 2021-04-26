@@ -1,5 +1,5 @@
 {
-  "train_batch_size":8,
+  "train_batch_size": 8,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "AdamW",
@@ -35,16 +35,24 @@
     "top_modules": 5,
     "detailed": true
   },
-  
 
   "zero_optimization": {
-    "stage": 2,
-    "cpu_offload": true,
-    "contiguous_gradients": false,
-    "overlap_comm": false,
-    "reduce_bucket_size": 5e6,
-    "allgather_bucket_size": 5e6
+    "stage": 3,
+    "contiguous_gradients": true,
+    "stage3_max_live_parameters": 1e9,
+    "stage3_max_reuse_distance": 1e9,
+    "stage3_prefetch_bucket_size": 1e7,
+    "stage3_param_persistence_threshold": 1e5,
+    "reduce_bucket_size": 1e7,
+    "sub_group_size": 1e9
   },
+  "offload_optimizer": {
+    "device": "cpu"
+  },
+  "offload_param": {
+    "device": "cpu"
+  },
+
   "activation_checkpointing": {
     "partition_activations": true,
     "cpu_checkpointing": true,
