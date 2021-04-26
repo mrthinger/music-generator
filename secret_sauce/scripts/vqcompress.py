@@ -69,7 +69,7 @@ def main():
         processed_songs.append(processed_song)
 
 
-    # processed songs -> [ (1,D) ] * S
+    # processed songs -> [ (D) ] * S
     torch.save(processed_songs, './savant-32000-compressed.pt')
 
 

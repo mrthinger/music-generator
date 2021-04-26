@@ -9,3 +9,9 @@ class BasicTransformerConfig():
     blocks_num: int = 24
 
     dropout: float = 0.0
+
+
+    window_size: int = 256
+    shift: int = 1
+
+    data_path: str = '/root/secret_sauce/savant-32000-compressed.pt'
