@@ -10,7 +10,7 @@ from secret_sauce.network.basic_transformer.transformer import BasicTransformer
 from secret_sauce.dataset.basic_compressed_dataset import BasicCompressedDataset
 from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
-from secret_sauce.util.util import parse_args, print_master
+from secret_sauce.util.util import is_master, parse_args, print_master
 from secret_sauce.config.config import Config
 
 from omegaconf import OmegaConf
@@ -18,6 +18,8 @@ import deepspeed
 import argparse
 from torch.utils.tensorboard import SummaryWriter
 from torch import nn
+from performer_pytorch import PerformerLM
+from performer_pytorch.autoregressive_wrapper import AutoregressiveWrapper
 
 
 def main():
@@ -30,53 +32,65 @@ def main():
 
     ds = BasicCompressedDataset(cfg)
 
-    transformer = BasicTransformer(cfg)
+    model = BasicTransformer(cfg)
+
+    model = PerformerLM(
+        num_tokens=cfg.vqvae.num_embeddings,
+        max_seq_len=2324592,
+        dim=cfg.transformer.width,
+        depth=cfg.transformer.blocks_num,
+        heads=cfg.transformer.heads_num,
+        causal=True
+    )
+    model = AutoregressiveWrapper(model)
 
     print_master(f"num ds elems: {len(ds)}")
-    print_master(f"num params: {sum(p.numel() for p in transformer.parameters())}")
+    print_master(f"num params: {sum(p.numel() for p in model.parameters())}")
 
-    model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
+    model_engine, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
         args=args,
-        model=transformer,
-        model_parameters=transformer.parameters(),
+        model=model,
+        model_parameters=model.parameters(),
         training_data=ds,
     )
 
-    model: DeepSpeedEngine = model
+    model_engine: DeepSpeedEngine = model_engine
     training_dataloader: DeepSpeedDataLoader = training_dataloader
 
     if cfg.load_dir != None and cfg.load_tag != None:
-        model.load_checkpoint(cfg.load_dir, tag=cfg.load_tag)
+        model_engine.load_checkpoint(cfg.load_dir, tag=cfg.load_tag)
 
-    if model.global_rank == 0:
+    if is_master():
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))
         writer.add_scalar(
-            "Parameters", sum(p.numel() for p in transformer.parameters())
+            "Parameters", sum(p.numel() for p in model.parameters())
         )
 
     for epoch in range(cfg.epochs):
 
         epoch_loss = 0
+        num_batches = 0
 
         for step, batch in enumerate(training_dataloader):
-            batch: torch.Tensor = batch.to(model.local_rank, dtype=torch.long)
+            model_engine.train()
+            batch: torch.Tensor = batch.to(model_engine.local_rank, dtype=torch.long)
 
-            src, src_pos, target = batch[:, 0, :], batch[:, 1, :], batch[:, 2, :]
-            prediction, loss = model(src, src_pos, target)  # [B, T, F]
+            loss = model_engine(batch) 
 
             epoch_loss += loss.item()
-            model.backward(loss)
-            model.step()
+            num_batches += 1 
+            model_engine.backward(loss)
+            model_engine.step()
             lr_scheduler.step()
 
-        epoch_loss /= len(training_dataloader)
+        epoch_loss /= num_batches
 
-        if model.global_rank == 0:
-            writer.add_scalar("loss/train", epoch_loss, global_step=model.global_steps)
+        if is_master:
+            writer.add_scalar("loss/train", epoch_loss, global_step=model_engine.global_steps)
 
-        if epoch % cfg.save_every_epochs == 0 and epoch != 0:
-            model.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
+        if epoch % cfg.save_every_epochs == 0:
+            model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
 
 
 if __name__ == "__main__":

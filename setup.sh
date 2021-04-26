@@ -2,4 +2,4 @@ poetry install
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt -f https://download.pytorch.org/whl/torch_stable.html
-pip install deepspeed==0.3.15 
+pip install deepspeed==0.3.15 pytorch-fast-transformers==0.4.0

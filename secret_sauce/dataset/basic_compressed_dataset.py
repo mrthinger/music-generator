@@ -24,10 +24,10 @@ class BasicCompressedDataset(Dataset):
         end = offset + self.sample_size
 
         clip = self.data[song_idx][start : end]
-        x = clip[: -self.cfg.transformer.shift]
-        y = clip[self.cfg.transformer.shift :]
-        x_pos = torch.arange(start, start+self.cfg.transformer.window_size)
-        return torch.stack((x, x_pos, y))
+        # x = clip[: -self.cfg.transformer.shift]
+        # y = clip[self.cfg.transformer.shift :]
+        # x_pos = torch.arange(start, start+self.cfg.transformer.window_size)
+        return clip
 
     def __len__(self):
         return int(np.floor(self.cumsum[-1] / self.sample_size))
