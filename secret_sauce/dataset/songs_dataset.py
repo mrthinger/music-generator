@@ -9,6 +9,27 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+class SongDataset(Dataset):
+    def __init__(self, datasource: IDataSource) -> None:
+        super().__init__()
+        self.datasource = datasource
+
+    def preprocess_sample(self, wave: torch.Tensor) -> torch.Tensor:
+        mix = .5
+        mono = mix * wave[0, ...] + (1 - mix) * wave[1, ...]
+        return mono.unsqueeze(0)  # add back chan dim [T] -> [C, T]
+
+    def __getitem__(self, item_idx: int):
+        wave = self.datasource.get_song(item_idx, offset=0, load_entire_song=True)
+        mono = self.preprocess_sample(wave)
+        return mono
+
+
+    def __len__(self):
+        return self.datasource.get_num_songs()
+
+
 class SongClipDataset(Dataset):
     def __init__(self, cfg: SongsDatasetConfig, datasource: IDataSource) -> None:
         super().__init__()

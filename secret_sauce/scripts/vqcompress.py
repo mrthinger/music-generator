@@ -1,108 +1,78 @@
 import torch
+
 torch.manual_seed(0)
 import random
+
 random.seed(0)
 import numpy as np
+
 np.random.seed(0)
 
-from deepspeed.runtime.dataloader import DeepSpeedDataLoader
-from deepspeed.runtime.engine import DeepSpeedEngine
-from secret_sauce.network.vqvae.vqvae import VQVAE
-from secret_sauce.dataset.songs_dataset import SongClipDataset
-from secret_sauce.dataset.datasources import DiskDataSource
-from secret_sauce.util.util import is_master, print_master, wait_for_debugger_on_master
-from secret_sauce.config.config import Config
-import torch.distributed as dist
-from torch.utils.data import DataLoader
-
 from omegaconf import OmegaConf
-import deepspeed
-import argparse
+from secret_sauce.config.config import Config
+from secret_sauce.dataset.datasources import DiskDataSource
+from secret_sauce.dataset.songs_dataset import SongDataset
+from secret_sauce.network.vqvae.vqvae import VQVAE
+from secret_sauce.util.util import is_master, wait_for_debugger
+import itertools
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="VAE Train")
-
-    # Include DeepSpeed configuration arguments
-    parser = deepspeed.add_config_arguments(parser)
-    parser.add_argument(
-        "--local_rank",
-        type=int,
-        default=-1,
-        help="local rank passed from distributed launcher",
-    )
-
-    args = parser.parse_args()
-    return args
-
+                                    
+from torch.utils.data import DataLoader
+from tqdm import tqdm
 
 def main():
     cfg = Config()
-    args = parse_args()
-
-
-    #configure params
-    cfg.load_dir = './weights/04'
-    cfg.load_tag = 'epoch-29'
-
-    deepspeed.init_distributed()
-
-    print_master(args)
-    print_master(OmegaConf.to_yaml(cfg))
+    print(OmegaConf.to_yaml(cfg))
 
     disk = DiskDataSource(cfg.dataset)
 
-    ds = SongClipDataset(cfg.dataset, disk)
+    ds = SongDataset(disk)
+    songs_dataloader = DataLoader(ds)
+
+    wait_for_debugger()
 
     vqvae = VQVAE(cfg)
 
-    print_master(f"num ds elems: {len(ds)}")
-    print_master(f"num params: {sum(p.numel() for p in vqvae.parameters())}")
-
-    model, optimizer, training_dataloader, lr_scheduler = deepspeed.initialize(
-        args=args, model=vqvae, model_parameters=vqvae.parameters(), training_data=ds
-    )
+    print(f"num ds elems: {len(ds)}")
 
 
-    model: DeepSpeedEngine = model
-    training_dataloader: DeepSpeedDataLoader = training_dataloader
-
-    if cfg.load_dir != None and cfg.load_tag != None:
-        model.load_checkpoint(cfg.load_dir, tag=cfg.load_tag, load_optimizer_states=False, load_lr_scheduler_states=False)
+    model_save = torch.load('/root/secret_sauce/weights/04/epoch-29/mp_rank_00_model_states.pt')['module']
+    vqvae.load_state_dict(model_save)
+    vqvae.to(device='cuda', dtype=torch.float16)
 
 
-    if is_master():
-        data = []
+    processed_songs = []
 
-    for step, batch in enumerate(training_dataloader):
-        if model.fp16_enabled:
-            batch = batch.type(torch.HalfTensor)
-        batch: torch.Tensor = batch.to(model.local_rank)
+    for batch in tqdm(songs_dataloader):
+        song = batch.to(device='cuda', dtype=torch.float16)
 
-
-        tensor_list = [torch.zeros((16,20000), dtype=torch.float32).to(model.local_rank) for _ in range(model.world_size)]
-
-        with torch.no_grad():
-        
-            y: torch.Tensor = model(batch, encode_only=True)
-            y = y.detach().type(torch.float32)
-
-        print_master((y.shape, tensor_list[0].shape, len(tensor_list)))
-
-        dist.all_gather(tensor_list, y)
-
-        if is_master():
-            data.append(tensor_list)
-    
+        chunks = []
+        B, C, D = song.shape
+        chunk_size = 8000000
+        while D > chunk_size:
+            chunk = song[..., :chunk_size]
+            song = song[..., chunk_size:]
+            B, C, D = song.shape
+            chunks.append(chunk)
+        chunks.append(song)
 
 
-    if is_master():
-        wait_for_debugger_on_master()
+        processed_chunks = []
 
-        import itertools
-        data = list(itertools.chain(*data))
-        data = torch.stack(data).view(-1).type(torch.int16)
-        print(data)
-        torch.save(data, "./savant32000-compressed.pt")
+        for chunk in chunks:
+            with torch.no_grad():
+                y: torch.Tensor = vqvae(chunk, encode_only=True)
+                y = y.detach().type(torch.int16)
+                processed_chunks.append(y)
+
+        processed_song = torch.cat(processed_chunks, dim=-1).view(-1)
+        processed_songs.append(processed_song)
+
+
+    # processed songs -> [ (1,D) ] * S
+    torch.save(processed_songs, './savant-32000-compressed.pt')
+
+
 
 
 

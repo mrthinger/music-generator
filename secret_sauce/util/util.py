@@ -29,7 +29,10 @@ def parse_args():
 
 def wait_for_debugger_on_master():
     if is_master():
-        import debugpy
-        debugpy.listen(5763)
-        print('waiting')
-        debugpy.wait_for_client()
+        wait_for_debugger()
+
+def wait_for_debugger():
+    import debugpy
+    debugpy.listen(5763)
+    print('waiting')
+    debugpy.wait_for_client()

@@ -18,7 +18,7 @@ class IDataSource:
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def get_song(self, idx: int, offset: float) -> torch.Tensor:
+    def get_song(self, idx: int, offset: float, load_entire_song: bool = False) -> torch.Tensor:
         raise NotImplementedError
 
     @abstractmethod
@@ -27,10 +27,6 @@ class IDataSource:
 
     @abstractmethod
     def get_num_songs(self) -> int:
-        raise NotImplementedError
-
-    @abstractmethod
-    def __getitem__(self) -> int:
         raise NotImplementedError
 
 
@@ -54,7 +50,6 @@ class DiskDataSource(IDataSource):
     def get_song(
         self, idx: int, offset: float, load_entire_song: bool = False
     ) -> torch.Tensor:
-
         frame_offset = int(offset * self.cfg.sample_rate)
         num_frames = int(self.cfg.sample_len * self.cfg.sample_rate)
 
