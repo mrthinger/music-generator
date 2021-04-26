@@ -1,3 +1,4 @@
+import shutil
 import torch
 
 torch.manual_seed(0)
@@ -15,6 +16,7 @@ from deepspeed.runtime.dataloader import DeepSpeedDataLoader
 from deepspeed.runtime.engine import DeepSpeedEngine
 from secret_sauce.util.util import is_master, parse_args, print_master, wait_for_debugger_on_master
 from secret_sauce.config.config import Config
+from secret_sauce.util.io import upload_blob
 
 from omegaconf import OmegaConf
 import deepspeed
@@ -38,7 +40,7 @@ def main():
 
     ds = BasicCompressedDataset(cfg)
 
-    with deepspeed.zero.Init():
+    with deepspeed.zero.Init(mem_efficient_linear=True):
         model = PerformerLM(
             num_tokens=cfg.vqvae.num_embeddings + 1,  # +1 is for start token
             max_seq_len=cfg.transformer.window_size + cfg.transformer.shift,
@@ -97,8 +99,15 @@ def main():
                 "loss/train", epoch_loss, global_step=model_engine.global_steps
             )
 
+
         if epoch % cfg.save_every_epochs == 0:
             model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
+            model_engine.save_fp16_model(cfg.save_dir, save_filename=f'epoch{epoch}_loss{epoch_loss}-model.bin')
+            
+            if is_master():
+                filepath = f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}'
+                shutil.make_archive(filepath, 'tar', f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}-model.bin')
+                upload_blob('secret-sauce', f'{filepath}.tar', f'{filepath}.tar')
 
 
 if __name__ == "__main__":

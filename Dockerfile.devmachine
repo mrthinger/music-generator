@@ -2,14 +2,14 @@ FROM pytorch/pytorch:1.7.1-cuda11.0-cudnn8-devel
 
 ENV HOME=/root
 
-ARG TZ=America/New_York
+ENV TZ=America/New_York
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt update -y \
     && apt install -y \
     software-properties-common \
     git wget curl g++ libsndfile1 \
-    htop unzip
+    htop unzip libaio-dev
 
 RUN add-apt-repository ppa:deadsnakes/ppa \
     && apt update -y \
