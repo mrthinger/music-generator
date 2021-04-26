@@ -96,20 +96,36 @@ def main():
 
         epoch_loss /= num_batches
 
-        if is_master:
+        if is_master():
             writer.add_scalar(
                 "loss/train", epoch_loss, global_step=model_engine.global_steps
             )
 
 
+        # zero 3 save code
+        # if epoch % cfg.save_every_epochs == 0:
+        #     model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
+        #     model_engine.save_fp16_model(cfg.save_dir, save_filename=f'epoch{epoch}_loss{epoch_loss}-model.bin')
+            
+        #     if is_master():
+        #         filepath = f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}'
+        #
+        #         # just upload states without taring - this breaks
+        #         shutil.make_archive(filepath, 'tar', f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}-model.bin')
+        #         upload_blob('secret-sauce', f'{filepath}.tar', f'{filepath}.tar')
+
         if epoch % cfg.save_every_epochs == 0:
             model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
-            model_engine.save_fp16_model(cfg.save_dir, save_filename=f'epoch{epoch}_loss{epoch_loss}-model.bin')
-            
+
             if is_master():
-                filepath = f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}'
-                shutil.make_archive(filepath, 'tar', f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}-model.bin')
-                upload_blob('secret-sauce', f'{filepath}.tar', f'{filepath}.tar')
+                filename = f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}'
+                filepath = f'{filename}.tar'
+                shutil.make_archive(filename, 'tar', f'{cfg.save_dir}/epoch-{epoch}')
+                upload_blob('secret-sauce', f'{filename}.tar', f'{filename}.tar')
+                import os
+                if os.path.exists(filepath):
+                    os.remove(filepath)
+
 
 
 if __name__ == "__main__":
