@@ -71,10 +71,10 @@ def main():
     if is_master():
         writer = SummaryWriter(cfg.save_dir)
         writer.add_scalar("Dataset Elements", len(ds))
-        writer.add_scalar("Parameters", sum(p.numel() for p in model.parameters()))
+        writer.add_scalar("Parameters", sum(p.numel() for p in model_engine.parameters()))
 
         print_master(f"num ds elems: {len(ds)}")
-        print_master(f"num params: {sum(p.numel() for p in model.parameters())}")
+        print_master(f"num params: {sum(p.numel() for p in model_engine.parameters())}")
 
 
     for epoch in range(cfg.epochs):
