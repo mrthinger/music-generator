@@ -49,6 +49,8 @@ def main():
             heads=cfg.transformer.heads_num,
             causal=True,
             use_scalenorm = True,
+            reversible= True,
+            emb_dropout=cfg.transformer.dropout,
         )
         model = AutoregressiveWrapper(model)
 
@@ -85,6 +87,7 @@ def main():
             batch: torch.Tensor = batch.to(model_engine.local_rank, dtype=torch.long)
 
             loss = model_engine(batch)
+            print_master(loss.item())
 
             epoch_loss += loss.item()
             num_batches += 1

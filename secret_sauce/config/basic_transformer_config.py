@@ -7,11 +7,10 @@ class BasicTransformerConfig():
     heads_num: int = 4
     blocks_num: int = 72
 
-    # not currently used
     dropout: float = 0.1
 
 
-    window_size: int = 1024
+    window_size: int = 2048
     shift: int = 1 # this should be 1 when using autoregressive wrapper
 
     data_path: str = '/root/secret_sauce/savant-32000-compressed.pt'
