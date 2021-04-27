@@ -133,6 +133,8 @@ class VQVAE(nn.Module):
 
     def decode(self, x: torch.Tensor):
         y = x
+        y = F.embedding(y, self.vector_quantizer.embed.transpose(0, 1))
+        y = y.permute(0, 2, 1).contiguous()
         y = self.decoder(y)
 
         return y

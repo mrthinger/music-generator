@@ -28,13 +28,13 @@ def main():
     torch.set_autocast_enabled(True)
 
 
-    wait_for_debugger()
+    # wait_for_debugger()
 
     # vqvae = VQVAE(cfg)
     # vq_save = torch.load('/root/secret_sauce/weights/04/epoch-29/mp_rank_00_model_states.pt')['module']
     # vqvae.load_state_dict(vq_save)
     # vqvae.to(device=0, dtype=torch.float16)
-    # y: torch.Tensor = vqvae(chunk, encode_only=True)
+    # vqvae.eval()
 
 
     transformer = PerformerLM(
@@ -49,7 +49,7 @@ def main():
         emb_dropout=cfg.transformer.dropout,
     )
     transformer = AutoregressiveWrapper(transformer)
-    transformer_save = torch.load('/root/secret_sauce/outputs/04-27-2021-07-20-40/epoch-3/mp_rank_00_model_states.pt')['module']
+    transformer_save = torch.load('mp_rank_00_model_states.pt')['module']
     transformer.load_state_dict(transformer_save)
     transformer.to(device=1, dtype=torch.float16)
 
@@ -57,9 +57,11 @@ def main():
 
     start_token = torch.tensor(cfg.vqvae.num_embeddings)
     start_token = start_token.unsqueeze(0).to(device=1, dtype=torch.long)
-    sample = transformer.generate(start_token, 4000*8, temperature=.98)
+    sample = transformer.generate(start_token, 4096*1, temperature=.99)
 
     torch.save(sample, './sample.pt')
+
+
 
 
 
