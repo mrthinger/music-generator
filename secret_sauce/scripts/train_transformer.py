@@ -94,12 +94,13 @@ def main():
             model_engine.step()
             lr_scheduler.step()
 
+            if is_master() and model_engine.global_steps % 10 == 0:
+                writer.add_scalar("step_loss/train", loss.item(), global_step=model_engine.global_steps)
+
         epoch_loss /= num_batches
 
         if is_master():
-            writer.add_scalar(
-                "loss/train", epoch_loss, global_step=model_engine.global_steps
-            )
+            writer.add_scalar("epoch_loss/train", epoch_loss, global_step=model_engine.global_steps)
 
 
         # zero 3 save code
