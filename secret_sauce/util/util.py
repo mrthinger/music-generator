@@ -36,3 +36,4 @@ def wait_for_debugger():
     debugpy.listen(5763)
     print('waiting')
     debugpy.wait_for_client()
+    print('connected')
