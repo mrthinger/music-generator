@@ -115,7 +115,7 @@ def main():
         #         shutil.make_archive(filepath, 'tar', f'{cfg.save_dir}/epoch{epoch}_loss{epoch_loss}-model.bin')
         #         upload_blob('secret-sauce', f'{filepath}.tar', f'{filepath}.tar')
 
-        if epoch % cfg.save_every_epochs == 0:
+        if epoch % cfg.save_every_epochs == 0 and (epoch != 0 or cfg.save_zeroth_epoch):
             model_engine.save_checkpoint(cfg.save_dir, tag=f"epoch-{epoch}")
 
             if is_master():
