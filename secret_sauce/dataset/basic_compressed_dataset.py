@@ -31,7 +31,7 @@ class BasicCompressedDataset(Dataset):
         return clip
 
     def __len__(self):
-        return int(np.floor(self.cumsum[-1] / self.sample_size))
+        return int(np.floor(self.cumsum[-1] / self.sample_size)) // 100
 
     def get_index_offset(self, item) -> tuple[int, int]:
         # For a given dataset item and shift, return song index and offset within song
