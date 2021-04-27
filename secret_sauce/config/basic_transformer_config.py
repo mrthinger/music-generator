@@ -2,9 +2,9 @@ from dataclasses import dataclass
 
 @dataclass
 class BasicTransformerConfig():
-    width: int = 512
+    width: int = 468
 
-    heads_num: int = 4
+    heads_num: int = 2
     blocks_num: int = 6
 
     dropout: float = 0.1
