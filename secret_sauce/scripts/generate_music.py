@@ -15,6 +15,7 @@ from secret_sauce.dataset.songs_dataset import SongDataset
 from secret_sauce.network.vqvae.vqvae import VQVAE
 from secret_sauce.util.util import is_master, wait_for_debugger
 import itertools
+import torchaudio
 
 from performer_pytorch import PerformerLM
 from performer_pytorch.autoregressive_wrapper import AutoregressiveWrapper
@@ -30,11 +31,11 @@ def main():
 
     # wait_for_debugger()
 
-    # vqvae = VQVAE(cfg)
-    # vq_save = torch.load('/root/secret_sauce/weights/04/epoch-29/mp_rank_00_model_states.pt')['module']
-    # vqvae.load_state_dict(vq_save)
-    # vqvae.to(device=0, dtype=torch.float16)
-    # vqvae.eval()
+    vqvae = VQVAE(cfg)
+    vq_save = torch.load('/root/secret_sauce/weights/04/epoch-29/mp_rank_00_model_states.pt')['module']
+    vqvae.load_state_dict(vq_save)
+    vqvae.to(device=0, dtype=torch.float16)
+    vqvae.eval()
 
 
     transformer = PerformerLM(
@@ -49,7 +50,7 @@ def main():
         emb_dropout=cfg.transformer.dropout,
     )
     transformer = AutoregressiveWrapper(transformer)
-    transformer_save = torch.load('mp_rank_00_model_states.pt')['module']
+    transformer_save = torch.load('/root/secret_sauce/outputs/04-27-2021-16-39-28/epoch-111/mp_rank_00_model_states.pt')['module']
     transformer.load_state_dict(transformer_save)
     transformer.to(device=1, dtype=torch.float16)
 
@@ -59,7 +60,12 @@ def main():
     start_token = start_token.unsqueeze(0).to(device=1, dtype=torch.long)
     sample = transformer.generate(start_token, 4096*1, temperature=.99)
 
-    torch.save(sample, './sample.pt')
+    # torch.save(sample, './sample.pt')
+
+    enc = sample.unsqueeze(0).to(device=0, dtype=torch.long)
+    audio = vqvae.decode(enc)[0]
+    save_audio = audio[0].to(device='cpu', dtype=torch.float32)
+    torchaudio.save('./song.mp3', save_audio, sample_rate=32000)
 
 
 
