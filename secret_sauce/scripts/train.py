@@ -80,7 +80,7 @@ def main():
             model.step()
             lr_scheduler.step()
 
-            if model.global_rank == 0 and model.global_steps % 10 == 0:
+            if model.global_rank == 0 and model.global_steps % 2 == 0:
                 writer.add_scalar("step_loss/train", loss.item(), global_step=model.global_steps)
                 writer.add_scalar("step_codebook_usage/train", codebook_usage, global_step=model.global_steps)
 
