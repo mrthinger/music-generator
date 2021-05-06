@@ -6,7 +6,7 @@
     "params": {
       "lr": 3e-4,
       "betas": [0.9, 0.95],
-      "eps": 1e-8
+      "eps": 1e-4
     }
   },
 
@@ -21,7 +21,7 @@
     }
   },
 
-  "gradient_clipping": 1.0,
+  "gradient_clipping": 0.6,
 
   "fp16": {
     "enabled": true,

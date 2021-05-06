@@ -29,9 +29,13 @@ from performer_pytorch.autoregressive_wrapper import AutoregressiveWrapper
 
 def main():
     cfg = Config()
+    cfg.load_dir = '/root/secret_sauce/outputs/start'
+    cfg.load_tag = 'epoch-1500'
+    
     args = parse_args()
-    deepspeed.init_distributed()
     torch.set_autocast_enabled(True)
+    deepspeed.init_distributed()
+
 
     # wait_for_debugger_on_master()
 
