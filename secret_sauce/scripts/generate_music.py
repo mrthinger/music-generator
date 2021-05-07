@@ -29,7 +29,7 @@ def main():
     torch.set_autocast_enabled(True)
 
 
-    # wait_for_debugger()
+    wait_for_debugger()
 
     vqvae = VQVAE(cfg)
     vq_save = torch.load('/root/secret_sauce/weights/04/epoch-29/mp_rank_00_model_states.pt')['module']
@@ -50,7 +50,7 @@ def main():
         emb_dropout=cfg.transformer.dropout,
     )
     transformer = AutoregressiveWrapper(transformer)
-    transformer_save = torch.load('/root/secret_sauce/outputs/05-06-2021-22-54-55/epoch-6000/mp_rank_00_model_states.pt')['module']
+    transformer_save = torch.load('/root/secret_sauce/outputs/05-07-2021-06-52-19/trans.pt')
     transformer.load_state_dict(transformer_save)
     transformer.to(device=1, dtype=torch.float16)
 

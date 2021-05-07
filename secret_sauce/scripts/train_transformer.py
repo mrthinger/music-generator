@@ -29,11 +29,12 @@ from performer_pytorch.autoregressive_wrapper import AutoregressiveWrapper
 
 def main():
     cfg = Config()
-    cfg.load_dir = '/root/secret_sauce/outputs/05-06-2021-22-54-55'
-    cfg.load_tag = 'epoch-6000'
-    cfg.save_name = '05-06-2021-22-54-55'
+    cfg.load_dir = '/root/secret_sauce/outputs/05-07-2021-06-52-19'
+    cfg.load_tag = 'epoch-1000'
+    cfg.save_name = '05-07-2021-06-52-19-1'
+    cfg.save_dir =  '/root/secret_sauce/outputs/05-07-2021-06-52-19-1'
     args = parse_args()
-    torch.set_autocast_enabled(True)
+    # torch.set_autocast_enabled(True)
     deepspeed.init_distributed()
 
 
