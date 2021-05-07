@@ -29,15 +29,13 @@ from performer_pytorch.autoregressive_wrapper import AutoregressiveWrapper
 
 def main():
     cfg = Config()
-    cfg.load_dir = '/root/secret_sauce/outputs/start'
-    cfg.load_tag = 'epoch-1500'
-    
+
     args = parse_args()
     torch.set_autocast_enabled(True)
     deepspeed.init_distributed()
 
 
-    # wait_for_debugger_on_master()
+    wait_for_debugger_on_master()
 
     print_master(args)
     print_master(OmegaConf.to_yaml(cfg))
@@ -100,11 +98,14 @@ def main():
 
             if is_master() and model_engine.global_steps % 2 == 0:
                 writer.add_scalar("step_loss/train", loss.item(), global_step=model_engine.global_steps)
+                writer.add_scalar("step_perplexity/train", torch.exp(loss.item()), global_step=model_engine.global_steps)
 
         epoch_loss /= num_batches
 
         if is_master():
             writer.add_scalar("epoch_loss/train", epoch_loss, global_step=model_engine.global_steps)
+            writer.add_scalar("epoch_perplexity/train", torch.exp(epoch_loss), global_step=model_engine.global_steps)
+
 
 
         # zero 3 save code
