@@ -4,8 +4,8 @@ from dataclasses import dataclass
 class BasicTransformerConfig():
     width: int = 1780
 
-    heads_num: int = 2
-    blocks_num: int = 16
+    heads_num: int = 1
+    blocks_num: int = 72
 
     dropout: float = 0.0
 

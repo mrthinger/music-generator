@@ -1,5 +1,5 @@
 {
-  "train_batch_size": 256,
+  "train_batch_size": 176,
   "wall_clock_breakdown": false,
   "optimizer": {
     "type": "AdamW",
@@ -15,7 +15,7 @@
     "type": "WarmupDecayLR",
     "params": {
       "warmup_min_lr": 1e-9,
-      "warmup_max_lr": 1e-4,
+      "warmup_max_lr": 2e-4,
       "warmup_num_steps": 250,
       "total_num_steps": 8000
     }
