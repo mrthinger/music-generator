@@ -50,7 +50,7 @@ def main():
         emb_dropout=cfg.transformer.dropout,
     )
     transformer = AutoregressiveWrapper(transformer)
-    transformer_save = torch.load('/root/secret_sauce/outputs/05-07-2021-06-52-19-1/epoch-1000/mp_rank_00_model_states.pt')['module']
+    transformer_save = torch.load('/root/secret_sauce/outputs/05-07-2021-08-59-1/epoch-500/mp_rank_00_model_states.pt')['module']
     transformer.load_state_dict(transformer_save)
     transformer.to(device=1, dtype=torch.float32)
 

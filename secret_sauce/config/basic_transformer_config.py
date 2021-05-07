@@ -10,7 +10,7 @@ class BasicTransformerConfig():
     dropout: float = 0.0
 
 
-    window_size: int = 8192 // 16
+    window_size: int = 8192 // 128
     shift: int = 1 # this should be 1 when using autoregressive wrapper
 
     data_path: str = 'savant-32000-compressed.pt'
