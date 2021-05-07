@@ -2,15 +2,15 @@ from dataclasses import dataclass
 
 @dataclass
 class BasicTransformerConfig():
-    width: int = 1480
+    width: int = 1780
 
     heads_num: int = 2
-    blocks_num: int = 48
+    blocks_num: int = 16
 
     dropout: float = 0.0
 
 
-    window_size: int = 8192 // 12
+    window_size: int = 8192 // 16
     shift: int = 1 # this should be 1 when using autoregressive wrapper
 
     data_path: str = 'savant-32000-compressed.pt'
