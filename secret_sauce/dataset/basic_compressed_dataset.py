@@ -27,7 +27,8 @@ class BasicCompressedDataset(Dataset):
         # x = clip[: -self.cfg.transformer.shift]
         # y = clip[self.cfg.transformer.shift :]
         # x_pos = torch.arange(start, start+self.cfg.transformer.window_size)
-        clip[0] = self.cfg.vqvae.num_embeddings # start token
+        if offset == 0:
+            clip[0] = self.cfg.vqvae.num_embeddings # start token
         return clip
 
     def __len__(self):
