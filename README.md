@@ -1,6 +1,8 @@
-# Secret Sauce
+# PyTorch Music Generator - aka Secret Sauce
 
 Secret Sauce is the code to train a music generating neural network.
+
+This is heavily inspired by OpenAI's Jukebox paper.
 
 # Requirements
 
